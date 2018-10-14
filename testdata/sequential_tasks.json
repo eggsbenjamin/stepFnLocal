@@ -1,0 +1,21 @@
+{
+  "Comment": "An example of the Amazon States Language using a choice state.",
+  "StartAt": "One",
+  "States": {
+    "One": {
+      "Type" : "Task",
+      "Resource" : "One",
+      "Next": "Two"
+    },
+    "Two": {
+      "Type" : "Task",
+      "Resource" : "Two",
+      "Next": "Three"
+    },
+    "Three": {
+      "Type": "Task",
+      "Resource" : "Three",
+      "End": true
+    }
+  }
+}
