@@ -35,9 +35,8 @@ func main() {
 
 	lambdaClient := lambda.New(session.Must(session.NewSession(config)))
 	invokeOutput, err := lambdaClient.Invoke(&lambda.InvokeInput{
-		FunctionName:   aws.String("linedetails_generator_devg"),
-		Payload:        []byte(`{ "test" : "hello!"}`),
-		InvocationType: aws.String("Event"),
+		FunctionName: aws.String("linedetails_generator_dev"),
+		Payload:      []byte(`{ "test" : "hello!"}`),
 	})
 	if err != nil {
 		log.Fatalf("error invoking lambda: %q", err)

@@ -14,10 +14,11 @@
   version = "v1.6.0"
 
 [[projects]]
-  digest = "1:a196d3f37d448dc1c7283ba3bcea78696487988d1228ec4e68ee2e0d7bdb3c5d"
+  digest = "1:682878f9867b9917038f9b933e4d5faa56352598f686922e5d1e84b8c33eeb58"
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
+    "aws/arn",
     "aws/awserr",
     "aws/awsutil",
     "aws/client",
@@ -70,6 +71,14 @@
   version = "v1.38.3"
 
 [[projects]]
+  digest = "1:bc38c7c481812e178d85160472e231c5e1c9a7f5845d67e23ee4e706933c10d8"
+  name = "github.com/golang/mock"
+  packages = ["gomock"]
+  pruneopts = "UT"
+  revision = "c34cdb4725f4c3844d095133c6e40e448b86589b"
+  version = "v1.1.1"
+
+[[projects]]
   digest = "1:e22af8c7518e1eab6f2eab2b7d7558927f816262586cd6ed9f349c97a6c285c4"
   name = "github.com/jmespath/go-jmespath"
   packages = ["."]
@@ -103,6 +112,14 @@
   revision = "f35b8ab0b5a2cef36673838d662e249dd9c94686"
   version = "v1.2.2"
 
+[[projects]]
+  branch = "master"
+  digest = "1:76ee51c3f468493aff39dbacc401e8831fbb765104cbf613b89bef01cf4bad70"
+  name = "golang.org/x/net"
+  packages = ["context"]
+  pruneopts = "UT"
+  revision = "49bb7cea24b1df9410e1712aa6433dae904ff66a"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
@@ -110,8 +127,10 @@
     "github.com/aws/aws-lambda-go/lambda",
     "github.com/aws/aws-lambda-go/lambda/messages",
     "github.com/aws/aws-sdk-go/aws",
+    "github.com/aws/aws-sdk-go/aws/arn",
     "github.com/aws/aws-sdk-go/aws/session",
     "github.com/aws/aws-sdk-go/service/lambda",
+    "github.com/golang/mock/gomock",
     "github.com/pkg/errors",
     "github.com/stretchr/testify/require",
   ]

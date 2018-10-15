@@ -1,6 +1,9 @@
 package state
 
-import "errors"
+import (
+	"encoding/json"
+	"errors"
+)
 
 const (
 	MissingRequiredFieldErrType = "Missing required field"
@@ -11,6 +14,20 @@ var (
 	ErrStateNotFound = errors.New("state not found")
 	ErrUnknownState  = errors.New("unknown state")
 )
+
+type Error struct {
+	Message json.RawMessage
+}
+
+func (e Error) Error() string {
+	return string(e.Message)
+}
+
+func NewError(msg json.RawMessage) Error {
+	return Error{
+		Message: msg,
+	}
+}
 
 // ValidationError represents a single AWS states language validation error.
 type ValidationError struct {
