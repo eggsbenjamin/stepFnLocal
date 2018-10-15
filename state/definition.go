@@ -1,3 +1,5 @@
+//go:generate mockgen -package state -source=definition.go -destination definition_mock.go
+
 package state
 
 import (
@@ -33,14 +35,14 @@ func (m MachineStates) GetDefinition(name string) (Definition, error) {
 		return nil, ErrStateNotFound
 	}
 
-	var stateDef *BaseStateDefinition
+	var stateDef *BaseDefinition
 	if err := json.Unmarshal(rawState, &stateDef); err != nil {
 		return nil, errors.Wrap(err, "error unmarshaling state json")
 	}
 
 	switch stateDef.StateType {
 	case TaskStateType:
-		var taskStateDef *TaskStateDefinition
+		var taskStateDef *TaskDefinition
 		if err := json.Unmarshal(rawState, &taskStateDef); err != nil {
 			return nil, errors.Wrap(err, "error unmarshaling task state json")
 		}
@@ -125,13 +127,13 @@ type Definition interface {
 	Validator
 }
 
-// BaseStateDefinition represents an AWS states language state. It contains fields that can appear in all state types.
-type BaseStateDefinition struct {
+// BaseDefinition represents an AWS states language state. It contains fields that can appear in all state types.
+type BaseDefinition struct {
 	StateType    string `json:"Type"`
 	StateComment string `json:"Comment"`
 }
 
-func (s BaseStateDefinition) Validate() error {
+func (s BaseDefinition) Validate() error {
 	validationErrs := ValidationErrors{}
 
 	if s.StateType == "" {
@@ -148,12 +150,12 @@ func (s BaseStateDefinition) Validate() error {
 	return nil
 }
 
-type TransitionStateDefinition struct {
+type TransitionDefinition struct {
 	NextState string `json:"Next"`
 	EndState  bool   `json:"End"`
 }
 
-func (t TransitionStateDefinition) Validate() error {
+func (t TransitionDefinition) Validate() error {
 	validationErrs := ValidationErrors{}
 
 	if t.NextState == "" && t.EndState != true {
@@ -169,18 +171,18 @@ func (t TransitionStateDefinition) Validate() error {
 	return nil
 }
 
-func (t TransitionStateDefinition) Next() string {
+func (t TransitionDefinition) Next() string {
 	return t.NextState
 }
 
-func (t TransitionStateDefinition) End() bool {
+func (t TransitionDefinition) End() bool {
 	return t.EndState
 }
 
-// TaskStateDefinition represents an AWS states language task state.
-type TaskStateDefinition struct {
-	BaseStateDefinition
-	TransitionStateDefinition
+// TaskDefinition represents an AWS states language task state.
+type TaskDefinition struct {
+	BaseDefinition
+	TransitionDefinition
 	Resource string `json:"Resource"`
 	/*
 		InputPath        string `json:"InputPath"`
@@ -191,18 +193,18 @@ type TaskStateDefinition struct {
 	*/
 }
 
-func (t TaskStateDefinition) Type() string {
+func (t TaskDefinition) Type() string {
 	return TaskStateType
 }
 
-func (t TaskStateDefinition) Validate() error {
+func (t TaskDefinition) Validate() error {
 	validationErrs := ValidationErrors{}
 
-	if err := t.BaseStateDefinition.Validate(); err != nil {
+	if err := t.BaseDefinition.Validate(); err != nil {
 		validationErrs = append(validationErrs, err.(ValidationErrors)...)
 	}
 
-	if err := t.TransitionStateDefinition.Validate(); err != nil {
+	if err := t.TransitionDefinition.Validate(); err != nil {
 		validationErrs = append(validationErrs, err.(ValidationErrors)...)
 	}
 
@@ -222,8 +224,8 @@ func (t TaskStateDefinition) Validate() error {
 // RetryDefinition represents an AWS states language retry block
 type RetryDefinition struct {
 	ErrorEquals     []string `json:"ErrorEquals"`
-	IntervalSeconds uint     `json:"IntervalSeconds"`
-	MaxAttempts     uint     `json:"MaxAttempts"`
+	IntervalSeconds int      `json:"IntervalSeconds"`
+	MaxAttempts     int      `json:"MaxAttempts"`
 	BackoffRate     float64  `json:"BackoffRate"`
 }
 

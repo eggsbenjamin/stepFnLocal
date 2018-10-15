@@ -37,7 +37,7 @@ func TestState(t *testing.T) {
 					{
 						state.TaskStateType,
 						func(def state.Definition) bool {
-							_, ok := def.(state.TaskStateDefinition)
+							_, ok := def.(state.TaskDefinition)
 							return ok
 						},
 					},
@@ -130,16 +130,16 @@ func TestState(t *testing.T) {
 		})
 	})
 
-	t.Run("BaseStateDefinition", func(t *testing.T) {
+	t.Run("BaseDefinition", func(t *testing.T) {
 		t.Run("Validate", func(t *testing.T) {
 			tests := []struct {
 				title         string
-				_state        state.BaseStateDefinition
+				_state        state.BaseDefinition
 				expectedError *state.ValidationError
 			}{
 				{
 					"missing type",
-					state.BaseStateDefinition{},
+					state.BaseDefinition{},
 					state.NewValidationError(
 						state.MissingRequiredFieldErrType,
 						"Type", "",
@@ -147,7 +147,7 @@ func TestState(t *testing.T) {
 				},
 				{
 					"invalid type",
-					state.BaseStateDefinition{
+					state.BaseDefinition{
 						StateType: "INVALID",
 					},
 					state.NewValidationError(
@@ -157,7 +157,7 @@ func TestState(t *testing.T) {
 				},
 				{
 					"valid",
-					state.BaseStateDefinition{
+					state.BaseDefinition{
 						StateType: state.TaskStateType,
 					},
 					nil,
@@ -179,16 +179,16 @@ func TestState(t *testing.T) {
 		})
 	})
 
-	t.Run("TransitionStateDefinition", func(t *testing.T) {
+	t.Run("TransitionDefinition", func(t *testing.T) {
 		t.Run("Validate", func(t *testing.T) {
 			tests := []struct {
 				title         string
-				_state        state.TransitionStateDefinition
+				_state        state.TransitionDefinition
 				expectedError *state.ValidationError
 			}{
 				{
 					"missing Next and End:true",
-					state.TransitionStateDefinition{},
+					state.TransitionDefinition{},
 					state.NewValidationError(
 						state.MissingRequiredFieldErrType,
 						"Next/End:true", "",
@@ -211,16 +211,16 @@ func TestState(t *testing.T) {
 		})
 	})
 
-	t.Run("TaskStateDefinition", func(t *testing.T) {
+	t.Run("TaskDefinition", func(t *testing.T) {
 		t.Run("Validate", func(t *testing.T) {
 			tests := []struct {
 				title         string
-				task          state.TaskStateDefinition
+				task          state.TaskDefinition
 				expectedError *state.ValidationError
 			}{
 				{
 					"missing resource",
-					state.TaskStateDefinition{},
+					state.TaskDefinition{},
 					state.NewValidationError(
 						state.MissingRequiredFieldErrType,
 						"Resource", "",
@@ -228,11 +228,11 @@ func TestState(t *testing.T) {
 				},
 				{
 					"valid",
-					state.TaskStateDefinition{
-						BaseStateDefinition: state.BaseStateDefinition{
+					state.TaskDefinition{
+						BaseDefinition: state.BaseDefinition{
 							StateType: state.TaskStateType,
 						},
-						TransitionStateDefinition: state.TransitionStateDefinition{
+						TransitionDefinition: state.TransitionDefinition{
 							EndState: true,
 						},
 						Resource: "test",

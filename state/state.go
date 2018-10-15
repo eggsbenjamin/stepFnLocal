@@ -1,12 +1,29 @@
 package state
 
+import (
+	"time"
+)
+
+type Machine interface {
+	StartExecution([]byte) (ExecutionResult, error)
+}
+
+type ExecutionResult struct {
+	Input  json.RawMessage
+	Output string
+	Status string
+	Start  time.Time
+	End    time.Time
+}
+
 type State interface {
 	Run(input []byte) ([]byte, error)
 	Next() string
+	End() bool
 }
 
 type TaskState struct {
-	def TaskStateDefinition
+	def TaskDefinition
 }
 
 func (t TaskState) Run(input []byte) ([]byte, error) {
@@ -14,5 +31,5 @@ func (t TaskState) Run(input []byte) ([]byte, error) {
 }
 
 func (t TaskState) Next() string {
-	return def.Next()
+	return t.def.Next()
 }

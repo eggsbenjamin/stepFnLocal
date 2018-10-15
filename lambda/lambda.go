@@ -1,4 +1,4 @@
-package main
+package lambda
 
 import (
 	"log"
@@ -11,7 +11,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func main() {
+func runLambda() {
 	const port = "9898"
 
 	helloWorld := NewLambda(
@@ -36,7 +36,7 @@ func main() {
 	log.Printf("%s", res.Payload)
 }
 
-type InvokeRequest awslambdamsg.InvokeResponse
+type InvokeRequest awslambdamsg.InvokeRequest
 
 type InvokeResponse awslambdamsg.InvokeResponse
 

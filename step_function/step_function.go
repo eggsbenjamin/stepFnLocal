@@ -2,7 +2,6 @@ package stepfunction
 
 import (
 	"encoding/json"
-	"errors"
 
 	"github.com/eggsbenjamin/stepFnLocal/state"
 )
@@ -12,20 +11,38 @@ type StepFunction interface {
 }
 
 type stepFunction struct {
-	stateMachine *state.MachineDefinition
-	resourceMap  map[string]string
+	stateMachineDef state.MachineDefinition
 }
 
-func New(stateMachine *state.MachineDefinition, resourceMap map[string]string) StepFunction {
+func New(stateMachineDef state.MachineDefinition) (StepFunction, error) {
+	// validate definition in ctr
+
 	return &stepFunction{
-		stateMachine: stateMachine,
-		resourceMap:  resourceMap,
-	}
+		stateMachineDef: stateMachineDef,
+	}, nil
 }
 
-func (r *stepFunction) StartExecution(input json.RawMessage) error {
-	if r.stateMachine.StartAt == "" {
-		return errors.New("missing StartAt")
+func (r *stepFunction) run(stateTitle string, input json.RawMessage) error {
+	stateDef, err := r.stateMachineDef.States.GetDefinition(stateTitle)
+	if err != nil {
+		return err
 	}
-	return nil
+
+	var state state.State
+	switch stateDef.Type() {
+	case state.TaskStateType:
+		def, ok := stateDef.(state.TaskDefinition)
+		state = state.NewTask(def)
+	}
+
+	output, err := state.Run(input)
+	if err != nil {
+		return err
+	}
+
+	if state.End() {
+		return nil
+	}
+
+	return run(state.Next(), output)
 }
