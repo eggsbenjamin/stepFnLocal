@@ -1,4 +1,4 @@
-//go:generate mockgen -package sfn -source=state.go -destination state_mock.go
+//go:generate mockgen -package sfn -source=factory.go -destination factory_mock.go
 
 package sfn
 
@@ -14,11 +14,13 @@ type StateFactory interface {
 }
 
 type stateFactory struct {
+	overrides    map[string]OverrideFn
 	lambdaClient lambda.Client
 }
 
-func NewStateFactory(lambdaClient lambda.Client) StateFactory {
+func NewStateFactory(overrides map[string]OverrideFn, lambdaClient lambda.Client) StateFactory {
 	return stateFactory{
+		overrides:    overrides,
 		lambdaClient: lambdaClient,
 	}
 }
@@ -37,10 +39,15 @@ func (s stateFactory) Create(def state.Definition) (state.State, error) {
 }
 
 func (s stateFactory) createTaskState(def state.TaskDefinition) (state.State, error) {
+	if overrideFn, ok := s.overrides[def.Resource]; ok {
+		return NewOverrideTask(def, overrideFn), nil
+	}
+
 	arn, err := arn.Parse(def.Resource)
 	if err != nil {
 		return nil, errors.Wrap(err, "invalid arn")
 	}
 
+	// TODO: add support for aws resources other than lambda
 	return NewLambdaTask(def, arn, s.lambdaClient), nil
 }

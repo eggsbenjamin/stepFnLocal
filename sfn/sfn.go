@@ -71,6 +71,9 @@ func (r stepFunction) run(stateTitle string, input json.RawMessage) ([]byte, err
 
 	if v, ok := def.(state.InputPather); ok {
 		input, err = v.InputPath().Search(input)
+		if err != nil {
+			return []byte{}, err
+		}
 	}
 
 	output, err := _state.Run(input)
@@ -92,6 +95,9 @@ func (r stepFunction) run(stateTitle string, input json.RawMessage) ([]byte, err
 
 	if v, ok := def.(state.OutputPather); ok {
 		output, err = v.OutputPath().Search(output)
+		if err != nil {
+			return []byte{}, err
+		}
 	}
 
 	if _state.IsEnd() {

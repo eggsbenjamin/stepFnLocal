@@ -57,3 +57,29 @@ func (l LambdaTask) Next() string {
 func (l LambdaTask) IsEnd() bool {
 	return l.definition.End()
 }
+
+type OverrideFn func(input []byte) ([]byte, error)
+
+type OverrideTask struct {
+	definition state.TaskDefinition
+	fn         OverrideFn
+}
+
+func NewOverrideTask(def state.TaskDefinition, fn OverrideFn) state.State {
+	return OverrideTask{
+		definition: def,
+		fn:         fn,
+	}
+}
+
+func (o OverrideTask) Run(input []byte) ([]byte, error) {
+	return o.fn(input)
+}
+
+func (o OverrideTask) Next() string {
+	return o.definition.Next()
+}
+
+func (o OverrideTask) IsEnd() bool {
+	return o.definition.End()
+}

@@ -25,6 +25,7 @@ func main() {
     },
     "Linedetails_Generator": {
       "Type": "Task",
+			"OutputPath" : "$.result",
       "Resource": "arn:aws:lambda:eu-west-1:459476646026:function:linedetails_generator_dev",
       "End": true
 		}
@@ -37,11 +38,16 @@ func main() {
 		log.Fatal(err)
 	}
 
+	overrides := map[string]sfn.OverrideFn{
+		"arn:aws:lambda:eu-west-1:459476646026:function:linedetails_generator_dev": func([]byte) ([]byte, error) {
+			return []byte(`{ "result" : [1,2,3,4,5] }`), nil
+		},
+	}
 	config := &aws.Config{
 		Region: aws.String("eu-west-1"),
 	}
 	lambdaClient := lambda.New(session.Must(session.NewSession(config)))
-	stateFactory := sfn.NewStateFactory(lambdaClient)
+	stateFactory := sfn.NewStateFactory(overrides, lambdaClient)
 
 	stepFn, err := sfn.New(def, stateFactory)
 	if err != nil {
