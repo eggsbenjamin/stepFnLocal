@@ -86,6 +86,14 @@
   revision = "0b12d6b5"
 
 [[projects]]
+  branch = "master"
+  digest = "1:4f971e961cc101712d18dbbd532813bbcd08c9984acceb55dff3fb86ed62ed5f"
+  name = "github.com/oliveagle/jsonpath"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "2e52cf6e685269ed8aefec6390f3cac3ef74e730"
+
+[[projects]]
   digest = "1:40e195917a951a8bf867cd05de2a46aaf1806c50cf92eebf4c16f78cd196f747"
   name = "github.com/pkg/errors"
   packages = ["."]
@@ -131,6 +139,7 @@
     "github.com/aws/aws-sdk-go/aws/session",
     "github.com/aws/aws-sdk-go/service/lambda",
     "github.com/golang/mock/gomock",
+    "github.com/oliveagle/jsonpath",
     "github.com/pkg/errors",
     "github.com/stretchr/testify/require",
   ]

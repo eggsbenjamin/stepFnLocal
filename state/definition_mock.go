@@ -126,6 +126,158 @@ func (mr *MockTransitionerMockRecorder) End() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "End", reflect.TypeOf((*MockTransitioner)(nil).End))
 }
 
+// MockInputPather is a mock of InputPather interface
+type MockInputPather struct {
+	ctrl     *gomock.Controller
+	recorder *MockInputPatherMockRecorder
+}
+
+// MockInputPatherMockRecorder is the mock recorder for MockInputPather
+type MockInputPatherMockRecorder struct {
+	mock *MockInputPather
+}
+
+// NewMockInputPather creates a new mock instance
+func NewMockInputPather(ctrl *gomock.Controller) *MockInputPather {
+	mock := &MockInputPather{ctrl: ctrl}
+	mock.recorder = &MockInputPatherMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockInputPather) EXPECT() *MockInputPatherMockRecorder {
+	return m.recorder
+}
+
+// InputPath mocks base method
+func (m *MockInputPather) InputPath() JSONPathExp {
+	ret := m.ctrl.Call(m, "InputPath")
+	ret0, _ := ret[0].(JSONPathExp)
+	return ret0
+}
+
+// InputPath indicates an expected call of InputPath
+func (mr *MockInputPatherMockRecorder) InputPath() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InputPath", reflect.TypeOf((*MockInputPather)(nil).InputPath))
+}
+
+// MockOutputPather is a mock of OutputPather interface
+type MockOutputPather struct {
+	ctrl     *gomock.Controller
+	recorder *MockOutputPatherMockRecorder
+}
+
+// MockOutputPatherMockRecorder is the mock recorder for MockOutputPather
+type MockOutputPatherMockRecorder struct {
+	mock *MockOutputPather
+}
+
+// NewMockOutputPather creates a new mock instance
+func NewMockOutputPather(ctrl *gomock.Controller) *MockOutputPather {
+	mock := &MockOutputPather{ctrl: ctrl}
+	mock.recorder = &MockOutputPatherMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockOutputPather) EXPECT() *MockOutputPatherMockRecorder {
+	return m.recorder
+}
+
+// OutputPath mocks base method
+func (m *MockOutputPather) OutputPath() JSONPathExp {
+	ret := m.ctrl.Call(m, "OutputPath")
+	ret0, _ := ret[0].(JSONPathExp)
+	return ret0
+}
+
+// OutputPath indicates an expected call of OutputPath
+func (mr *MockOutputPatherMockRecorder) OutputPath() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutputPath", reflect.TypeOf((*MockOutputPather)(nil).OutputPath))
+}
+
+// MockIOPather is a mock of IOPather interface
+type MockIOPather struct {
+	ctrl     *gomock.Controller
+	recorder *MockIOPatherMockRecorder
+}
+
+// MockIOPatherMockRecorder is the mock recorder for MockIOPather
+type MockIOPatherMockRecorder struct {
+	mock *MockIOPather
+}
+
+// NewMockIOPather creates a new mock instance
+func NewMockIOPather(ctrl *gomock.Controller) *MockIOPather {
+	mock := &MockIOPather{ctrl: ctrl}
+	mock.recorder = &MockIOPatherMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockIOPather) EXPECT() *MockIOPatherMockRecorder {
+	return m.recorder
+}
+
+// InputPath mocks base method
+func (m *MockIOPather) InputPath() JSONPathExp {
+	ret := m.ctrl.Call(m, "InputPath")
+	ret0, _ := ret[0].(JSONPathExp)
+	return ret0
+}
+
+// InputPath indicates an expected call of InputPath
+func (mr *MockIOPatherMockRecorder) InputPath() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InputPath", reflect.TypeOf((*MockIOPather)(nil).InputPath))
+}
+
+// OutputPath mocks base method
+func (m *MockIOPather) OutputPath() JSONPathExp {
+	ret := m.ctrl.Call(m, "OutputPath")
+	ret0, _ := ret[0].(JSONPathExp)
+	return ret0
+}
+
+// OutputPath indicates an expected call of OutputPath
+func (mr *MockIOPatherMockRecorder) OutputPath() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutputPath", reflect.TypeOf((*MockIOPather)(nil).OutputPath))
+}
+
+// MockResultPather is a mock of ResultPather interface
+type MockResultPather struct {
+	ctrl     *gomock.Controller
+	recorder *MockResultPatherMockRecorder
+}
+
+// MockResultPatherMockRecorder is the mock recorder for MockResultPather
+type MockResultPatherMockRecorder struct {
+	mock *MockResultPather
+}
+
+// NewMockResultPather creates a new mock instance
+func NewMockResultPather(ctrl *gomock.Controller) *MockResultPather {
+	mock := &MockResultPather{ctrl: ctrl}
+	mock.recorder = &MockResultPatherMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockResultPather) EXPECT() *MockResultPatherMockRecorder {
+	return m.recorder
+}
+
+// ResultPath mocks base method
+func (m *MockResultPather) ResultPath() JSONPathExp {
+	ret := m.ctrl.Call(m, "ResultPath")
+	ret0, _ := ret[0].(JSONPathExp)
+	return ret0
+}
+
+// ResultPath indicates an expected call of ResultPath
+func (mr *MockResultPatherMockRecorder) ResultPath() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResultPath", reflect.TypeOf((*MockResultPather)(nil).ResultPath))
+}
+
 // MockDefinition is a mock of Definition interface
 type MockDefinition struct {
 	ctrl     *gomock.Controller

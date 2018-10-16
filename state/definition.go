@@ -4,6 +4,8 @@ package state
 
 import (
 	"encoding/json"
+
+	"github.com/eggsbenjamin/stepFnLocal/jsonpath"
 	"github.com/pkg/errors"
 )
 
@@ -17,7 +19,7 @@ const (
 	ParallelStateType = "Parallel"
 )
 
-var types = map[string]struct{}{
+var validTypes = map[string]struct{}{
 	PassStateType:    {},
 	TaskStateType:    {},
 	ChoiceStateType:  {},
@@ -121,10 +123,47 @@ type Transitioner interface {
 	End() bool
 }
 
+type InputPather interface {
+	InputPath() JSONPathExp
+}
+
+type OutputPather interface {
+	OutputPath() JSONPathExp
+}
+
+type IOPather interface {
+	InputPather
+	OutputPather
+}
+
+type ResultPather interface {
+	ResultPath() JSONPathExp
+}
+
 // Definition defines the definition interface which all state definitions must implement
 type Definition interface {
 	Typer
 	Validator
+}
+
+type JSONPathExp string
+
+func (j JSONPathExp) Validate() error {
+	_, err := jsonpath.NewExpression(string(j))
+	return err
+}
+
+func (j JSONPathExp) Search(input []byte) ([]byte, error) {
+	if string(j) == "" {
+		return input, nil
+	}
+
+	exp, err := jsonpath.NewExpression(string(j))
+	if err != nil {
+		return []byte{}, err
+	}
+
+	return exp.Search(input)
 }
 
 // BaseDefinition represents an AWS states language state. It contains fields that can appear in all state types.
@@ -139,7 +178,7 @@ func (s BaseDefinition) Validate() error {
 	if s.StateType == "" {
 		validationErrs = append(validationErrs, NewValidationError(MissingRequiredFieldErrType, "Type", ""))
 	} else {
-		if _, ok := types[s.StateType]; !ok {
+		if _, ok := validTypes[s.StateType]; !ok {
 			validationErrs = append(validationErrs, NewValidationError(InvalidValueErrType, "Type", s.StateType))
 		}
 	}
@@ -179,15 +218,80 @@ func (t TransitionDefinition) End() bool {
 	return t.EndState
 }
 
+type IODefinition struct {
+	InputPathExp  JSONPathExp `json:"InputPath"`
+	OutputPathExp JSONPathExp `json:"OutputPath"`
+}
+
+func (i IODefinition) Validate() error {
+	validationErrs := ValidationErrors{}
+
+	if i.InputPathExp != "" {
+		if err := i.InputPathExp.Validate(); err != nil {
+			validationErrs = append(validationErrs, NewValidationError(
+				InvalidJSONPathErrType,
+				"InputPath", string(i.InputPathExp),
+			))
+		}
+	}
+
+	if i.OutputPathExp != "" {
+		if err := i.OutputPathExp.Validate(); err != nil {
+			validationErrs = append(validationErrs, NewValidationError(
+				InvalidJSONPathErrType,
+				"OutputPath", string(i.OutputPathExp),
+			))
+		}
+	}
+
+	if len(validationErrs) > 0 {
+		return validationErrs
+	}
+	return nil
+}
+
+func (i IODefinition) InputPath() JSONPathExp {
+	return i.InputPathExp
+}
+
+func (i IODefinition) OutputPath() JSONPathExp {
+	return i.OutputPathExp
+}
+
+type ResultDefinition struct {
+	ResultPathExp JSONPathExp `json:"ResultPath"`
+}
+
+func (r ResultDefinition) Validate() error {
+	validationErrs := ValidationErrors{}
+
+	if r.ResultPathExp != "" {
+		if err := r.ResultPathExp.Validate(); err != nil {
+			validationErrs = append(validationErrs, NewValidationError(
+				InvalidJSONPathErrType,
+				"ResultPath", string(r.ResultPathExp),
+			))
+		}
+	}
+
+	if len(validationErrs) > 0 {
+		return validationErrs
+	}
+	return nil
+}
+
+func (r ResultDefinition) ResultPath() JSONPathExp {
+	return r.ResultPathExp
+}
+
 // TaskDefinition represents an AWS states language task state.
 type TaskDefinition struct {
 	BaseDefinition
 	TransitionDefinition
+	IODefinition
+	ResultDefinition
 	Resource string `json:"Resource"`
 	/*
-		InputPath        string `json:"InputPath"`
-		OutputPath       string `json:"OutputPath"`
-		ResultPath       string `json:"ResultPath"`
 		TimeoutSeconds   int    `json:"TimeoutSeconds"`
 		HeartbeatSeconds int    `json:"HeartbeatSeconds"`
 	*/
@@ -208,11 +312,46 @@ func (t TaskDefinition) Validate() error {
 		validationErrs = append(validationErrs, err.(ValidationErrors)...)
 	}
 
+	if err := t.IODefinition.Validate(); err != nil {
+		validationErrs = append(validationErrs, err.(ValidationErrors)...)
+	}
+
+	if err := t.ResultDefinition.Validate(); err != nil {
+		validationErrs = append(validationErrs, err.(ValidationErrors)...)
+	}
+
 	if t.Resource == "" {
 		validationErrs = append(validationErrs, NewValidationError(
 			MissingRequiredFieldErrType,
 			"Resource", "",
 		))
+	}
+
+	if t.InputPathExp != "" {
+		if err := t.InputPathExp.Validate(); err != nil {
+			validationErrs = append(validationErrs, NewValidationError(
+				InvalidJSONPathErrType,
+				"InputPath", string(t.InputPathExp),
+			))
+		}
+	}
+
+	if t.OutputPathExp != "" {
+		if err := t.OutputPathExp.Validate(); err != nil {
+			validationErrs = append(validationErrs, NewValidationError(
+				InvalidJSONPathErrType,
+				"OutputPath", string(t.OutputPathExp),
+			))
+		}
+	}
+
+	if t.ResultPathExp != "" {
+		if err := t.ResultPathExp.Validate(); err != nil {
+			validationErrs = append(validationErrs, NewValidationError(
+				InvalidJSONPathErrType,
+				"ResultPath", string(t.ResultPathExp),
+			))
+		}
 	}
 
 	if len(validationErrs) > 0 {

@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestState(t *testing.T) {
+func TestDefinitions(t *testing.T) {
 	t.Run("MachineStates", func(t *testing.T) {
 		t.Run("Get", func(t *testing.T) {
 			t.Run("not found", func(t *testing.T) {
@@ -207,6 +207,103 @@ func TestState(t *testing.T) {
 				vErr, ok := err.(state.ValidationErrors)
 				require.True(t, ok)
 				require.Contains(t, vErr, tt.expectedError)
+			}
+		})
+	})
+
+	t.Run("IODefinition", func(t *testing.T) {
+		t.Run("Validate", func(t *testing.T) {
+			tests := []struct {
+				title         string
+				task          state.IODefinition
+				expectedError *state.ValidationError
+			}{
+				{
+					"invalid InputPath",
+					state.IODefinition{
+						InputPathExp: "invalid json path",
+					},
+					state.NewValidationError(
+						state.InvalidJSONPathErrType,
+						"InputPath", "invalid json path",
+					),
+				},
+				{
+					"invalid OutputPath",
+					state.IODefinition{
+						OutputPathExp: "invalid json path",
+					},
+					state.NewValidationError(
+						state.InvalidJSONPathErrType,
+						"OutputPath", "invalid json path",
+					),
+				},
+				{
+					"valid",
+					state.IODefinition{
+						InputPathExp:  "$",
+						OutputPathExp: "$",
+					},
+					nil,
+				},
+			}
+
+			for _, tt := range tests {
+				t.Run(tt.title, func(t *testing.T) {
+					err := tt.task.Validate()
+					if tt.expectedError == nil {
+						require.NoError(t, err)
+						return
+					}
+
+					require.Error(t, err)
+					vErr, ok := err.(state.ValidationErrors)
+					require.True(t, ok)
+					require.Contains(t, vErr, tt.expectedError)
+				})
+			}
+		})
+	})
+
+	t.Run("ResultDefinition", func(t *testing.T) {
+		t.Run("Validate", func(t *testing.T) {
+			tests := []struct {
+				title         string
+				task          state.ResultDefinition
+				expectedError *state.ValidationError
+			}{
+				{
+					"invalid ResultPath",
+					state.ResultDefinition{
+						ResultPathExp: "invalid json path",
+					},
+					state.NewValidationError(
+						state.InvalidJSONPathErrType,
+						"ResultPath", "invalid json path",
+					),
+				},
+				{
+					"valid",
+					state.ResultDefinition{
+						ResultPathExp: "$",
+					},
+					nil,
+				},
+			}
+
+			for _, tt := range tests {
+				t.Run(tt.title, func(t *testing.T) {
+					err := tt.task.Validate()
+					if tt.expectedError == nil {
+						require.NoError(t, err)
+						return
+					}
+
+					require.Error(t, err)
+					vErr, ok := err.(state.ValidationErrors)
+					require.True(t, ok)
+					require.Contains(t, vErr, tt.expectedError)
+				})
 			}
 		})
 	})

@@ -22,7 +22,7 @@ func TestLambdaTask(t *testing.T) {
 		t.Run("client", func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			mockClient := lambda.NewMockClient(ctrl)
-			mockClient.EXPECT().Invoke(gomock.Any()).Return(nil, dummyErr)
+			mockClient.EXPECT().Invoke(gomock.Any()).Return(&awslambda.InvokeOutput{}, dummyErr)
 
 			task := sfn.NewLambdaTask(
 				state.TaskDefinition{},
@@ -68,6 +68,7 @@ func TestLambdaTask(t *testing.T) {
 		mockClient := lambda.NewMockClient(ctrl)
 		mockClient.EXPECT().Invoke(&awslambda.InvokeInput{
 			FunctionName: &arnStr,
+			LogType:      aws.String("Tail"),
 			Payload:      input,
 		}).Return(&awslambda.InvokeOutput{
 			Payload: output,

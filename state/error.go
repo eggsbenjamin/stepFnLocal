@@ -8,6 +8,7 @@ import (
 const (
 	MissingRequiredFieldErrType = "Missing required field"
 	InvalidValueErrType         = "Invalid Value"
+	InvalidJSONPathErrType      = "Invalid JSON path expression"
 )
 
 var (

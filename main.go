@@ -10,7 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/lambda"
 )
 
-func main() {
+func old_main() {
 	srv := http.NewServeMux()
 	srv.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("%q\n", r.URL.String())

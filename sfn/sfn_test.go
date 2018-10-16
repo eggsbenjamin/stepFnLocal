@@ -31,15 +31,15 @@ func TestStepFunction(t *testing.T) {
 			mockStateFactory := sfn.NewMockStateFactory(ctrl)
 
 			gomock.InOrder(
-				mockStateFactory.EXPECT().Create(gomock.Any()).Return(mockState, true),
+				mockStateFactory.EXPECT().Create(gomock.Any()).Return(mockState, nil),
 				mockState.EXPECT().Run(input).Return(output, nil),
 				mockState.EXPECT().IsEnd().Return(false),
 				mockState.EXPECT().Next().Return("test2"),
-				mockStateFactory.EXPECT().Create(gomock.Any()).Return(mockState, true),
+				mockStateFactory.EXPECT().Create(gomock.Any()).Return(mockState, nil),
 				mockState.EXPECT().Run(output).Return(output, nil),
 				mockState.EXPECT().IsEnd().Return(false),
 				mockState.EXPECT().Next().Return("test3"),
-				mockStateFactory.EXPECT().Create(gomock.Any()).Return(mockState, true),
+				mockStateFactory.EXPECT().Create(gomock.Any()).Return(mockState, nil),
 				mockState.EXPECT().Run(output).Return(output, nil),
 				mockState.EXPECT().IsEnd().Return(true),
 			)

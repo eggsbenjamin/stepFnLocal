@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/eggsbenjamin/stepFnLocal/state"
-	"github.com/pkg/errors"
 )
 
 const (
@@ -63,16 +62,36 @@ func (r stepFunction) run(stateTitle string, input json.RawMessage) ([]byte, err
 	var _state state.State
 	switch def.Type() {
 	case state.TaskStateType:
-		task, ok := r.stateFactory.Create(def)
-		if !ok {
-			return []byte{}, errors.New("unknown state")
+		task, err := r.stateFactory.Create(def)
+		if err != nil {
+			return []byte{}, err
 		}
 		_state = task
+	}
+
+	if v, ok := def.(state.InputPather); ok {
+		input, err = v.InputPath().Search(input)
 	}
 
 	output, err := _state.Run(input)
 	if err != nil {
 		return []byte{}, err
+	}
+
+	/*
+		TODO: add support for ResultPath
+
+		ResultPath modifies the output of a state using jsonpath.
+
+		e.g.
+
+		output = {"hello":"world"}
+		ResultPath = "$.test"
+		modified = {"test":{"hello":"world"}}
+	*/
+
+	if v, ok := def.(state.OutputPather); ok {
+		output, err = v.OutputPath().Search(output)
 	}
 
 	if _state.IsEnd() {
