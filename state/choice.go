@@ -1,8 +1,6 @@
 package state
 
 import (
-	"encoding/json"
-	"strconv"
 	"time"
 )
 
@@ -34,6 +32,8 @@ const (
 	And                        = "And"
 	Or                         = "Or"
 	Not                        = "Not"
+
+	VariableOperatorList = "StringEquals/StringLessThan/StringGreaterThan/StringLessThanEquals/StringGreaterThanEquals/NumericEquals/NumericLessThan/NumericGreaterThan/NumericLessThanEquals/NumericGreaterThanEquals/BooleanEquals/TimestampLessThan/TimestampGreaterThan/TimestampLessThanEquals/TimestampGreaterThanEquals/TimestampGreaterThanEquals"
 )
 
 var validComparisonOperators = map[string]struct{}{
@@ -58,233 +58,269 @@ var validComparisonOperators = map[string]struct{}{
 	Not: {},
 }
 
-type ChoiceComparisonFn func(v string, ctrl string) (bool, error)
-
-func StringEqualsFn(v string, ctrl string) (bool, error) {
-	return v == ctrl, nil
+type VariableOperator interface {
+	Operand() interface{}
+	Variable() JSONPathExp
 }
 
-func StringLessThanFn(v string, ctrl string) (bool, error) {
-	return v < ctrl, nil
+type ChoiceRuleDefinition interface {
+	Validate(depth int) error
+	Operator() string
 }
 
-func StringGreaterThanFn(v string, ctrl string) (bool, error) {
-	return v > ctrl, nil
+type BaseChoiceRuleDefinition struct {
+	VariableExp                JSONPathExp                `json:"Variable"`
+	NextState                  string                     `json:"Next"`
+	StringEquals               *string                    `json:"StringEquals"`
+	StringLessThan             *string                    `json:"StringLessThan"`
+	StringGreaterThan          *string                    `json:"StringGreaterThan"`
+	StringLessThanEquals       *string                    `json:"StringLessThanEquals"`
+	StringGreaterThanEquals    *string                    `json:"StringGreaterThanEquals"`
+	NumericEquals              *float64                   `json:"NumericEquals"`
+	NumericLessThan            *float64                   `json:"NumericLessThan"`
+	NumericGreaterThan         *float64                   `json:"NumericGreaterThan"`
+	NumericLessThanEquals      *float64                   `json:"NumericLessThanEquals"`
+	NumericGreaterThanEquals   *float64                   `json:"NumericGreaterThanEquals"`
+	BooleanEquals              *bool                      `json:"BooleanEquals"`
+	TimestampLessThan          *time.Time                 `json:"TimestampLessThan"`
+	TimestampGreaterThan       *time.Time                 `json:"TimestampGreaterThan"`
+	TimestampLessThanEquals    *time.Time                 `json:"TimestampLessThanEquals"`
+	TimestampGreaterThanEquals *time.Time                 `json:"TimestampGreaterThanEquals"`
+	And                        []BaseChoiceRuleDefinition `json:"And"`
+	Or                         []BaseChoiceRuleDefinition `json:"Or"`
+	Not                        *BaseChoiceRuleDefinition  `json:"Not"`
 }
 
-func StringLessThanEqualsFn(v string, ctrl string) (bool, error) {
-	return v <= ctrl, nil
-}
+func (b BaseChoiceRuleDefinition) Validate(depth int) error {
+	validationErrs := ValidationErrors{}
 
-func StringGreaterThanEqualsFn(v string, ctrl string) (bool, error) {
-	return v >= ctrl, nil
-}
-
-func NumericEqualsFn(v string, ctrl string) (bool, error) {
-	n1, err := strconv.ParseFloat(v, 64)
-	if err != nil {
-		return false, err
+	if err := b.validateLogicalOperatorCombinations(); err != nil {
+		validationErrs = append(validationErrs, err.(ValidationErrors)...)
 	}
 
-	n2, err := strconv.ParseFloat(v, 64)
-	if err != nil {
-		return false, err
-	}
+	variableOperatorCount := b.countVariableOperators()
 
-	return n1 == n2, nil
-}
-
-func NumericLessThanFn(v string, ctrl string) (bool, error) {
-	n1, err := strconv.ParseFloat(v, 64)
-	if err != nil {
-		return false, err
-	}
-
-	n2, err := strconv.ParseFloat(v, 64)
-	if err != nil {
-		return false, err
-	}
-
-	return n1 < n2, nil
-}
-
-func NumericGreaterThanFn(v string, ctrl string) (bool, error) {
-	n1, err := strconv.ParseFloat(v, 64)
-	if err != nil {
-		return false, err
-	}
-
-	n2, err := strconv.ParseFloat(v, 64)
-	if err != nil {
-		return false, err
-	}
-
-	return n1 > n2, nil
-}
-
-func NumericLessThanEqualsFn(v string, ctrl string) (bool, error) {
-	n1, err := strconv.ParseFloat(v, 64)
-	if err != nil {
-		return false, err
-	}
-
-	n2, err := strconv.ParseFloat(v, 64)
-	if err != nil {
-		return false, err
-	}
-
-	return n1 <= n2, nil
-}
-
-func NumericGreaterThanEqualsFn(v string, ctrl string) (bool, error) {
-	n1, err := strconv.ParseFloat(v, 64)
-	if err != nil {
-		return false, err
-	}
-
-	n2, err := strconv.ParseFloat(v, 64)
-	if err != nil {
-		return false, err
-	}
-
-	return n1 >= n2, nil
-}
-
-func BooleanEqualsFn(v string, ctrl string) (bool, error) {
-	b1, err := strconv.ParseBool(v)
-	if err != nil {
-		return false, err
-	}
-
-	b2, err := strconv.ParseBool(ctrl)
-	if err != nil {
-		return false, err
-	}
-
-	return b1 == b2, nil
-}
-
-func TimestampEqualsFn(v string, ctrl string) (bool, error) {
-	t1, err := time.Parse(time.RFC3339, v)
-	if err != nil {
-		return false, err
-	}
-
-	t2, err := time.Parse(time.RFC3339, ctrl)
-	if err != nil {
-		return false, err
-	}
-
-	return t1.Equal(t2), nil
-}
-
-func TimestampLessThanFn(v string, ctrl string) (bool, error) {
-	t1, err := time.Parse(time.RFC3339, v)
-	if err != nil {
-		return false, err
-	}
-
-	t2, err := time.Parse(time.RFC3339, ctrl)
-	if err != nil {
-		return false, err
-	}
-
-	return t1.Before(t2), nil
-}
-
-func TimestampGreaterThanFn(v string, ctrl string) (bool, error) {
-	t1, err := time.Parse(time.RFC3339, v)
-	if err != nil {
-		return false, err
-	}
-
-	t2, err := time.Parse(time.RFC3339, ctrl)
-	if err != nil {
-		return false, err
-	}
-
-	return t1.After(t2), nil
-}
-
-func TimestampLessThanEqualsFn(v string, ctrl string) (bool, error) {
-	t1, err := time.Parse(time.RFC3339, v)
-	if err != nil {
-		return false, err
-	}
-
-	t2, err := time.Parse(time.RFC3339, ctrl)
-	if err != nil {
-		return false, err
-	}
-
-	return t1.Before(t2) || t1.Equal(t2), nil
-}
-
-func TimestampGreaterThanEqualsFn(v string, ctrl string) (bool, error) {
-	t1, err := time.Parse(time.RFC3339, v)
-	if err != nil {
-		return false, err
-	}
-
-	t2, err := time.Parse(time.RFC3339, ctrl)
-	if err != nil {
-		return false, err
-	}
-
-	return t1.After(t2) || t1.Equal(t2), nil
-}
-
-// TODO: think if these should actually be defined like this?
-func AndFn(v string, ctrl string) (bool, error) { return false, nil }
-func OrFn(v string, ctrl string) (bool, error)  { return false, nil }
-func NotFn(v string, ctrl string) (bool, error) { return false, nil }
-
-type ChoiceRuleDefinition struct {
-	VariableExp                JSONPathExp            `json:"Variable"`
-	NextState                  string                 `json:"Next"`
-	StringEquals               *string                `json:"StringEquals"`
-	StringLessThan             *string                `json:"StringLessThan"`
-	StringGreaterThan          *string                `json:"StringGreaterThan"`
-	StringLessThanEquals       *string                `json:"StringLessThanEquals"`
-	StringGreaterThanEquals    *string                `json:"StringGreaterThanEquals"`
-	NumericEquals              *float64               `json:"NumericEquals"`
-	NumericLessThan            *float64               `json:"NumericLessThan"`
-	NumericGreaterThan         *float64               `json:"NumericGreaterThan"`
-	NumericLessThanEquals      *float64               `json:"NumericLessThanEquals"`
-	NumericGreaterThanEquals   *float64               `json:"NumericGreaterThanEquals"`
-	BooleanEquals              *bool                  `json:"BooleanEquals"`
-	TimestampLessThan          *time.Time             `json:"TimestampLessThan"`
-	TimestampGreaterThan       *time.Time             `json:"TimestampGreaterThan"`
-	TimestampLessThanEquals    *time.Time             `json:"TimestampLessThanEquals"`
-	TimestampGreaterThanEquals *time.Time             `json:"TimestampGreaterThanEquals"`
-	And                        []ChoiceRuleDefinition `json:"And"`
-	Or                         []ChoiceRuleDefinition `json:"Or"`
-	Not                        *ChoiceRuleDefinition  `json:"Not"`
-}
-
-type ChoiceRules []json.RawMessage
-
-func (c ChoiceRules) GetDefinitionAtIndex(i int) (ChoiceRuleDefinition, error) {
-	out := map[string]json.RawMessage{}
-	if err := json.Unmarshal(c[i], &out); err != nil {
-		return nil, nil
-	}
-
-	for k, v := range out {
-		if k == "Variable" || k == "Next" {
-			continue
+	if b.VariableExp != "" {
+		if err := b.VariableExp.Validate(); err != nil {
+			validationErrs = append(validationErrs, NewValidationError(
+				InvalidJSONPathErrType,
+				"Variable", string(b.VariableExp),
+			))
 		}
 
-		operator, ok := validComparisonOperators[k]
-		if !ok {
-			return nil, errors.Errof("unknown choice state operator: %s", k)
+		if variableOperatorCount == 0 {
+			validationErrs = append(validationErrs, NewValidationError(
+				MissingRequiredFieldErrType,
+				VariableOperatorList, "",
+			))
 		}
 
-		var ruleDef ChoiceRuleDefinition
-		switch operator {
-		case StringEquals:
+		if variableOperatorCount > 1 {
+			validationErrs = append(validationErrs, NewValidationError(
+				InvalidCombinationErrType,
+				VariableOperatorList,
+				OnlyOneMustExistErrMsg,
+			))
 		}
 	}
 
-	return nil, nil
+	if b.And != nil {
+		if variableOperatorCount > 0 {
+			validationErrs = append(validationErrs, NewValidationError(
+				InvalidCombinationErrType,
+				OnlyOneMustExistErrMsg,
+				"And || "+VariableOperatorList,
+			))
+		}
+
+		for _, choiceRule := range b.And {
+			if err := choiceRule.Validate(depth + 1); err != nil {
+				validationErrs = append(validationErrs, err.(ValidationErrors)...)
+			}
+		}
+	}
+
+	if b.Or != nil {
+		if variableOperatorCount > 0 {
+			validationErrs = append(validationErrs, NewValidationError(
+				InvalidCombinationErrType,
+				OnlyOneMustExistErrMsg,
+				"Or || "+VariableOperatorList,
+			))
+		}
+
+		for _, choiceRule := range b.Or {
+			if err := choiceRule.Validate(depth + 1); err != nil {
+				validationErrs = append(validationErrs, err.(ValidationErrors)...)
+			}
+		}
+	}
+
+	if b.Not != nil {
+		if variableOperatorCount > 0 {
+			validationErrs = append(validationErrs, NewValidationError(
+				InvalidCombinationErrType,
+				OnlyOneMustExistErrMsg,
+				"Not || "+VariableOperatorList,
+			))
+		}
+
+		if err := b.Not.Validate(depth + 1); err != nil {
+			validationErrs = append(validationErrs, err.(ValidationErrors)...)
+		}
+	}
+
+	if depth == 0 {
+		if b.NextState == "" {
+			validationErrs = append(validationErrs, NewValidationError(
+				MissingRequiredFieldErrType,
+				"Next", "",
+			))
+		}
+	}
+
+	if depth > 0 {
+		if b.NextState != "" {
+			validationErrs = append(validationErrs, NewValidationError(
+				InvalidKeyErrType,
+				"Next", "",
+			))
+		}
+	}
+
+	if len(validationErrs) > 0 {
+		return validationErrs
+	}
+	return nil
+}
+
+func (b BaseChoiceRuleDefinition) Variable() JSONPathExp {
+	return b.VariableExp
+}
+
+func (b BaseChoiceRuleDefinition) Next() string {
+	return b.NextState
+}
+
+func (b BaseChoiceRuleDefinition) validateLogicalOperatorCombinations() error {
+	validationErrs := ValidationErrors{}
+
+	var count int
+	if b.VariableExp != "" {
+		count++
+	}
+	if b.And != nil {
+		count++
+	}
+	if b.Or != nil {
+		count++
+	}
+	if b.Not != nil {
+		count++
+	}
+
+	if count > 1 {
+		validationErrs = append(validationErrs, NewValidationError(
+			InvalidCombinationErrType,
+			OnlyOneMustExistErrMsg,
+			"Variable/And/Or/Not",
+		))
+	}
+
+	if count == 0 {
+		validationErrs = append(validationErrs, NewValidationError(
+			MissingRequiredFieldErrType,
+			"Variable/And/Or/Not", "",
+		))
+	}
+
+	if len(validationErrs) > 0 {
+		return validationErrs
+	}
+	return nil
+}
+
+func (b BaseChoiceRuleDefinition) countVariableOperators() int {
+	var count int
+
+	if b.StringEquals != nil {
+		count++
+	}
+	if b.StringLessThan != nil {
+		count++
+	}
+	if b.StringGreaterThan != nil {
+		count++
+	}
+	if b.StringLessThanEquals != nil {
+		count++
+	}
+	if b.StringGreaterThanEquals != nil {
+		count++
+	}
+	if b.NumericEquals != nil {
+		count++
+	}
+	if b.NumericLessThan != nil {
+		count++
+	}
+	if b.NumericGreaterThan != nil {
+		count++
+	}
+	if b.NumericLessThanEquals != nil {
+		count++
+	}
+	if b.NumericGreaterThanEquals != nil {
+		count++
+	}
+	if b.BooleanEquals != nil {
+		count++
+	}
+	if b.TimestampLessThan != nil {
+		count++
+	}
+	if b.TimestampGreaterThan != nil {
+		count++
+	}
+	if b.TimestampLessThanEquals != nil {
+		count++
+	}
+
+	return count
+}
+
+type ChoiceDefinition struct {
+	Choices      []BaseChoiceRuleDefinition `json:"Choices"`
+	DefaultState string                     `json:"Default"`
+	NextState    string                     `json:"-"`
+}
+
+func (c ChoiceDefinition) Type() string {
+	return ChoiceStateType
+}
+
+func (c ChoiceDefinition) Validate() error {
+	validationErrs := ValidationErrors{}
+
+	if len(c.Choices) == 0 {
+		validationErrs = append(validationErrs, NewValidationError(
+			InvalidValueErrType,
+			"Choices", "Is empty",
+		))
+	}
+
+	for _, choiceRule := range c.Choices {
+		if err := choiceRule.Validate(0); err != nil {
+			validationErrs = append(validationErrs, err.(ValidationErrors)...)
+		}
+	}
+
+	if len(validationErrs) > 0 {
+		return validationErrs
+	}
+	return nil
+}
+
+func (c ChoiceDefinition) Next() string {
+	return c.NextState
 }

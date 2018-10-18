@@ -7,8 +7,13 @@ import (
 
 const (
 	MissingRequiredFieldErrType = "Missing required field"
+	InvalidKeyErrType           = "Invalid Key"
 	InvalidValueErrType         = "Invalid Value"
 	InvalidJSONPathErrType      = "Invalid JSON path expression"
+	InvalidCombinationErrType   = "Invalid Combination"
+	NonRFC3339TimeStampErrType  = "Non RFC3339 timestamp"
+
+	OnlyOneMustExistErrMsg = "Only one must exist"
 )
 
 var (
