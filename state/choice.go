@@ -1,6 +1,7 @@
 package state
 
 import (
+	"strings"
 	"time"
 )
 
@@ -32,11 +33,35 @@ const (
 	And                        = "And"
 	Or                         = "Or"
 	Not                        = "Not"
-
-	VariableOperatorList = "StringEquals/StringLessThan/StringGreaterThan/StringLessThanEquals/StringGreaterThanEquals/NumericEquals/NumericLessThan/NumericGreaterThan/NumericLessThanEquals/NumericGreaterThanEquals/BooleanEquals/TimestampLessThan/TimestampGreaterThan/TimestampLessThanEquals/TimestampGreaterThanEquals/TimestampGreaterThanEquals"
 )
 
-var validComparisonOperators = map[string]struct{}{
+var (
+	VariableOperators = []string{
+		StringEquals,
+		StringLessThan,
+		StringGreaterThan,
+		StringLessThanEquals,
+		StringGreaterThanEquals,
+		NumericEquals,
+		NumericLessThan,
+		NumericGreaterThan,
+		NumericLessThanEquals,
+		NumericGreaterThanEquals,
+		BooleanEquals,
+		TimestampEquals,
+		TimestampLessThan,
+		TimestampGreaterThan,
+		TimestampLessThanEquals,
+		TimestampGreaterThanEquals,
+	}
+	LogicalOperators = []string{
+		And,
+		Or,
+		Not,
+	}
+)
+
+var operatorLookup = map[string]struct{}{
 	StringEquals:               {},
 	StringLessThan:             {},
 	StringGreaterThan:          {},
@@ -63,35 +88,36 @@ type VariableOperator interface {
 	Variable() JSONPathExp
 }
 
-type ChoiceRuleDefinition interface {
+type RuleDefinition interface {
 	Validate(depth int) error
-	Operator() string
+	Type() string
 }
 
-type BaseChoiceRuleDefinition struct {
-	VariableExp                JSONPathExp                `json:"Variable"`
-	NextState                  string                     `json:"Next"`
-	StringEquals               *string                    `json:"StringEquals"`
-	StringLessThan             *string                    `json:"StringLessThan"`
-	StringGreaterThan          *string                    `json:"StringGreaterThan"`
-	StringLessThanEquals       *string                    `json:"StringLessThanEquals"`
-	StringGreaterThanEquals    *string                    `json:"StringGreaterThanEquals"`
-	NumericEquals              *float64                   `json:"NumericEquals"`
-	NumericLessThan            *float64                   `json:"NumericLessThan"`
-	NumericGreaterThan         *float64                   `json:"NumericGreaterThan"`
-	NumericLessThanEquals      *float64                   `json:"NumericLessThanEquals"`
-	NumericGreaterThanEquals   *float64                   `json:"NumericGreaterThanEquals"`
-	BooleanEquals              *bool                      `json:"BooleanEquals"`
-	TimestampLessThan          *time.Time                 `json:"TimestampLessThan"`
-	TimestampGreaterThan       *time.Time                 `json:"TimestampGreaterThan"`
-	TimestampLessThanEquals    *time.Time                 `json:"TimestampLessThanEquals"`
-	TimestampGreaterThanEquals *time.Time                 `json:"TimestampGreaterThanEquals"`
-	And                        []BaseChoiceRuleDefinition `json:"And"`
-	Or                         []BaseChoiceRuleDefinition `json:"Or"`
-	Not                        *BaseChoiceRuleDefinition  `json:"Not"`
+type ChoiceRuleDefinition struct {
+	VariableExp                JSONPathExp            `json:"Variable"`
+	NextState                  string                 `json:"Next"`
+	StringEquals               *string                `json:"StringEquals"`
+	StringLessThan             *string                `json:"StringLessThan"`
+	StringGreaterThan          *string                `json:"StringGreaterThan"`
+	StringLessThanEquals       *string                `json:"StringLessThanEquals"`
+	StringGreaterThanEquals    *string                `json:"StringGreaterThanEquals"`
+	NumericEquals              *float64               `json:"NumericEquals"`
+	NumericLessThan            *float64               `json:"NumericLessThan"`
+	NumericGreaterThan         *float64               `json:"NumericGreaterThan"`
+	NumericLessThanEquals      *float64               `json:"NumericLessThanEquals"`
+	NumericGreaterThanEquals   *float64               `json:"NumericGreaterThanEquals"`
+	BooleanEquals              *bool                  `json:"BooleanEquals"`
+	TimestampEquals            *time.Time             `json:"TimestampLessThan"`
+	TimestampLessThan          *time.Time             `json:"TimestampLessThan"`
+	TimestampGreaterThan       *time.Time             `json:"TimestampGreaterThan"`
+	TimestampLessThanEquals    *time.Time             `json:"TimestampLessThanEquals"`
+	TimestampGreaterThanEquals *time.Time             `json:"TimestampGreaterThanEquals"`
+	And                        []ChoiceRuleDefinition `json:"And"`
+	Or                         []ChoiceRuleDefinition `json:"Or"`
+	Not                        *ChoiceRuleDefinition  `json:"Not"`
 }
 
-func (b BaseChoiceRuleDefinition) Validate(depth int) error {
+func (b ChoiceRuleDefinition) Validate(depth int) error {
 	validationErrs := ValidationErrors{}
 
 	if err := b.validateLogicalOperatorCombinations(); err != nil {
@@ -111,14 +137,14 @@ func (b BaseChoiceRuleDefinition) Validate(depth int) error {
 		if variableOperatorCount == 0 {
 			validationErrs = append(validationErrs, NewValidationError(
 				MissingRequiredFieldErrType,
-				VariableOperatorList, "",
+				strings.Join(VariableOperators, "/"), "",
 			))
 		}
 
 		if variableOperatorCount > 1 {
 			validationErrs = append(validationErrs, NewValidationError(
 				InvalidCombinationErrType,
-				VariableOperatorList,
+				strings.Join(VariableOperators, "/"),
 				OnlyOneMustExistErrMsg,
 			))
 		}
@@ -129,7 +155,7 @@ func (b BaseChoiceRuleDefinition) Validate(depth int) error {
 			validationErrs = append(validationErrs, NewValidationError(
 				InvalidCombinationErrType,
 				OnlyOneMustExistErrMsg,
-				"And || "+VariableOperatorList,
+				"And || "+strings.Join(VariableOperators, "/"),
 			))
 		}
 
@@ -145,7 +171,7 @@ func (b BaseChoiceRuleDefinition) Validate(depth int) error {
 			validationErrs = append(validationErrs, NewValidationError(
 				InvalidCombinationErrType,
 				OnlyOneMustExistErrMsg,
-				"Or || "+VariableOperatorList,
+				"Or || "+strings.Join(VariableOperators, "/"),
 			))
 		}
 
@@ -161,7 +187,7 @@ func (b BaseChoiceRuleDefinition) Validate(depth int) error {
 			validationErrs = append(validationErrs, NewValidationError(
 				InvalidCombinationErrType,
 				OnlyOneMustExistErrMsg,
-				"Not || "+VariableOperatorList,
+				"Not || "+strings.Join(VariableOperators, "/"),
 			))
 		}
 
@@ -194,15 +220,66 @@ func (b BaseChoiceRuleDefinition) Validate(depth int) error {
 	return nil
 }
 
-func (b BaseChoiceRuleDefinition) Variable() JSONPathExp {
-	return b.VariableExp
+func (b ChoiceRuleDefinition) Type() string {
+	if b.StringEquals != nil {
+		return StringEquals
+	}
+	if b.StringLessThan != nil {
+		return StringLessThan
+	}
+	if b.StringGreaterThan != nil {
+		return StringGreaterThan
+	}
+	if b.StringLessThanEquals != nil {
+		return StringLessThanEquals
+	}
+	if b.StringGreaterThanEquals != nil {
+		return StringGreaterThanEquals
+	}
+	if b.NumericEquals != nil {
+		return NumericEquals
+	}
+	if b.NumericLessThan != nil {
+		return NumericLessThan
+	}
+	if b.NumericGreaterThan != nil {
+		return NumericGreaterThan
+	}
+	if b.NumericLessThanEquals != nil {
+		return NumericLessThanEquals
+	}
+	if b.NumericGreaterThanEquals != nil {
+		return NumericGreaterThanEquals
+	}
+	if b.BooleanEquals != nil {
+		return BooleanEquals
+	}
+	if b.TimestampLessThan != nil {
+		return TimestampLessThan
+	}
+	if b.TimestampGreaterThan != nil {
+		return TimestampGreaterThan
+	}
+	if b.TimestampLessThanEquals != nil {
+		return TimestampLessThanEquals
+	}
+	if b.TimestampGreaterThanEquals != nil {
+		return TimestampGreaterThanEquals
+	}
+	if b.And != nil {
+		return And
+	}
+	if b.Or != nil {
+		return Or
+	}
+	if b.Not != nil {
+		return Not
+	}
+
+	return ""
 }
 
-func (b BaseChoiceRuleDefinition) Next() string {
-	return b.NextState
-}
-
-func (b BaseChoiceRuleDefinition) validateLogicalOperatorCombinations() error {
+func (b ChoiceRuleDefinition) validateLogicalOperatorCombinations() error {
 	validationErrs := ValidationErrors{}
 
 	var count int
@@ -240,7 +317,7 @@ func (b BaseChoiceRuleDefinition) validateLogicalOperatorCombinations() error {
 	return nil
 }
 
-func (b BaseChoiceRuleDefinition) countVariableOperators() int {
+func (b ChoiceRuleDefinition) countVariableOperators() int {
 	var count int
 
 	if b.StringEquals != nil {
@@ -276,6 +353,9 @@ func (b BaseChoiceRuleDefinition) countVariableOperators() int {
 	if b.BooleanEquals != nil {
 		count++
 	}
+	if b.TimestampEquals != nil {
+		count++
+	}
 	if b.TimestampLessThan != nil {
 		count++
 	}
@@ -285,14 +365,17 @@ func (b BaseChoiceRuleDefinition) countVariableOperators() int {
 	if b.TimestampLessThanEquals != nil {
 		count++
 	}
+	if b.TimestampGreaterThanEquals != nil {
+		count++
+	}
 
 	return count
 }
 
 type ChoiceDefinition struct {
-	Choices      []BaseChoiceRuleDefinition `json:"Choices"`
-	DefaultState string                     `json:"Default"`
-	NextState    string                     `json:"-"`
+	Choices      []ChoiceRuleDefinition `json:"Choices"`
+	DefaultState string                 `json:"Default"`
+	NextState    string                 `json:"-"`
 }
 
 func (c ChoiceDefinition) Type() string {

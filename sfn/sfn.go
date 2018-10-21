@@ -59,14 +59,9 @@ func (r stepFunction) run(stateTitle string, input json.RawMessage) ([]byte, err
 		return []byte{}, err
 	}
 
-	var _state state.State
-	switch def.Type() {
-	case state.TaskStateType:
-		task, err := r.stateFactory.Create(def)
-		if err != nil {
-			return []byte{}, err
-		}
-		_state = task
+	_state, err := r.stateFactory.Create(def)
+	if err != nil {
+		return []byte{}, err
 	}
 
 	if v, ok := def.(state.InputPather); ok {

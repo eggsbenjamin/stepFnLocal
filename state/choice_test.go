@@ -3,6 +3,7 @@
 package state_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -11,18 +12,18 @@ import (
 )
 
 func TestChoiceRuleDefinitions(t *testing.T) {
-	t.Run("BaseChoiceRuleDefinition", func(t *testing.T) {
+	t.Run("ChoiceRuleDefinition", func(t *testing.T) {
 		t.Run("Validate", func(t *testing.T) {
 			tests := []struct {
 				title         string
-				def           state.BaseChoiceRuleDefinition
+				def           state.ChoiceRuleDefinition
 				expectedError *state.ValidationError
 			}{
 				{
 					"Variable with And",
-					state.BaseChoiceRuleDefinition{
+					state.ChoiceRuleDefinition{
 						VariableExp: "$",
-						And:         []state.BaseChoiceRuleDefinition{},
+						And:         []state.ChoiceRuleDefinition{},
 					},
 					state.NewValidationError(
 						state.InvalidCombinationErrType,
@@ -32,9 +33,9 @@ func TestChoiceRuleDefinitions(t *testing.T) {
 				},
 				{
 					"Variable with Or",
-					state.BaseChoiceRuleDefinition{
+					state.ChoiceRuleDefinition{
 						VariableExp: "$",
-						Or:          []state.BaseChoiceRuleDefinition{},
+						Or:          []state.ChoiceRuleDefinition{},
 					},
 					state.NewValidationError(
 						state.InvalidCombinationErrType,
@@ -44,9 +45,9 @@ func TestChoiceRuleDefinitions(t *testing.T) {
 				},
 				{
 					"Variable with Not",
-					state.BaseChoiceRuleDefinition{
+					state.ChoiceRuleDefinition{
 						VariableExp: "$",
-						Not:         &state.BaseChoiceRuleDefinition{},
+						Not:         &state.ChoiceRuleDefinition{},
 					},
 					state.NewValidationError(
 						state.InvalidCombinationErrType,
@@ -56,9 +57,9 @@ func TestChoiceRuleDefinitions(t *testing.T) {
 				},
 				{
 					"And with Or",
-					state.BaseChoiceRuleDefinition{
-						And: []state.BaseChoiceRuleDefinition{},
-						Or:  []state.BaseChoiceRuleDefinition{},
+					state.ChoiceRuleDefinition{
+						And: []state.ChoiceRuleDefinition{},
+						Or:  []state.ChoiceRuleDefinition{},
 					},
 					state.NewValidationError(
 						state.InvalidCombinationErrType,
@@ -68,9 +69,9 @@ func TestChoiceRuleDefinitions(t *testing.T) {
 				},
 				{
 					"And with Not",
-					state.BaseChoiceRuleDefinition{
-						And: []state.BaseChoiceRuleDefinition{},
-						Not: &state.BaseChoiceRuleDefinition{},
+					state.ChoiceRuleDefinition{
+						And: []state.ChoiceRuleDefinition{},
+						Not: &state.ChoiceRuleDefinition{},
 					},
 					state.NewValidationError(
 						state.InvalidCombinationErrType,
@@ -80,9 +81,9 @@ func TestChoiceRuleDefinitions(t *testing.T) {
 				},
 				{
 					"Or with Not",
-					state.BaseChoiceRuleDefinition{
-						Or:  []state.BaseChoiceRuleDefinition{},
-						Not: &state.BaseChoiceRuleDefinition{},
+					state.ChoiceRuleDefinition{
+						Or:  []state.ChoiceRuleDefinition{},
+						Not: &state.ChoiceRuleDefinition{},
 					},
 					state.NewValidationError(
 						state.InvalidCombinationErrType,
@@ -92,43 +93,43 @@ func TestChoiceRuleDefinitions(t *testing.T) {
 				},
 				{
 					"And with operator",
-					state.BaseChoiceRuleDefinition{
-						And:          []state.BaseChoiceRuleDefinition{},
+					state.ChoiceRuleDefinition{
+						And:          []state.ChoiceRuleDefinition{},
 						StringEquals: aws.String("test"),
 					},
 					state.NewValidationError(
 						state.InvalidCombinationErrType,
 						state.OnlyOneMustExistErrMsg,
-						"And || "+state.VariableOperatorList,
+						"And || "+strings.Join(state.VariableOperators, "/"),
 					),
 				},
 				{
 					"Or with operator",
-					state.BaseChoiceRuleDefinition{
-						Or:           []state.BaseChoiceRuleDefinition{},
+					state.ChoiceRuleDefinition{
+						Or:           []state.ChoiceRuleDefinition{},
 						StringEquals: aws.String("test"),
 					},
 					state.NewValidationError(
 						state.InvalidCombinationErrType,
 						state.OnlyOneMustExistErrMsg,
-						"Or || "+state.VariableOperatorList,
+						"Or || "+strings.Join(state.VariableOperators, "/"),
 					),
 				},
 				{
 					"Not with operator",
-					state.BaseChoiceRuleDefinition{
-						Not:          &state.BaseChoiceRuleDefinition{},
+					state.ChoiceRuleDefinition{
+						Not:          &state.ChoiceRuleDefinition{},
 						StringEquals: aws.String("test"),
 					},
 					state.NewValidationError(
 						state.InvalidCombinationErrType,
 						state.OnlyOneMustExistErrMsg,
-						"Not || "+state.VariableOperatorList,
+						"Not || "+strings.Join(state.VariableOperators, "/"),
 					),
 				},
 				{
 					"missing Variable/And/Or/Not",
-					state.BaseChoiceRuleDefinition{},
+					state.ChoiceRuleDefinition{},
 					state.NewValidationError(
 						state.MissingRequiredFieldErrType,
 						"Variable/And/Or/Not", "",
@@ -136,30 +137,30 @@ func TestChoiceRuleDefinitions(t *testing.T) {
 				},
 				{
 					"variable with no operator",
-					state.BaseChoiceRuleDefinition{
+					state.ChoiceRuleDefinition{
 						VariableExp: "$",
 					},
 					state.NewValidationError(
 						state.MissingRequiredFieldErrType,
-						state.VariableOperatorList, "",
+						strings.Join(state.VariableOperators, "/"), "",
 					),
 				},
 				{
 					"variable with more than one operator",
-					state.BaseChoiceRuleDefinition{
+					state.ChoiceRuleDefinition{
 						VariableExp:          "$",
 						StringEquals:         aws.String("test"),
 						StringLessThanEquals: aws.String("test"),
 					},
 					state.NewValidationError(
 						state.InvalidCombinationErrType,
-						state.VariableOperatorList,
+						strings.Join(state.VariableOperators, "/"),
 						state.OnlyOneMustExistErrMsg,
 					),
 				},
 				{
 					"invalid Variable json path",
-					state.BaseChoiceRuleDefinition{
+					state.ChoiceRuleDefinition{
 						VariableExp: "invalid json path",
 					},
 					state.NewValidationError(
@@ -169,7 +170,7 @@ func TestChoiceRuleDefinitions(t *testing.T) {
 				},
 				{
 					"missing top level next",
-					state.BaseChoiceRuleDefinition{},
+					state.ChoiceRuleDefinition{},
 					state.NewValidationError(
 						state.MissingRequiredFieldErrType,
 						"Next", "",
@@ -177,8 +178,8 @@ func TestChoiceRuleDefinitions(t *testing.T) {
 				},
 				{
 					"And Next populated > top level",
-					state.BaseChoiceRuleDefinition{
-						And: []state.BaseChoiceRuleDefinition{
+					state.ChoiceRuleDefinition{
+						And: []state.ChoiceRuleDefinition{
 							{
 								NextState: "test",
 							},
@@ -191,8 +192,8 @@ func TestChoiceRuleDefinitions(t *testing.T) {
 				},
 				{
 					"Or Next populated > top level",
-					state.BaseChoiceRuleDefinition{
-						Or: []state.BaseChoiceRuleDefinition{
+					state.ChoiceRuleDefinition{
+						Or: []state.ChoiceRuleDefinition{
 							{
 								NextState: "test",
 							},
@@ -205,8 +206,8 @@ func TestChoiceRuleDefinitions(t *testing.T) {
 				},
 				{
 					"Not Next populated > top level",
-					state.BaseChoiceRuleDefinition{
-						Not: &state.BaseChoiceRuleDefinition{
+					state.ChoiceRuleDefinition{
+						Not: &state.ChoiceRuleDefinition{
 							NextState: "test",
 						},
 					},
@@ -217,7 +218,7 @@ func TestChoiceRuleDefinitions(t *testing.T) {
 				},
 				{
 					"valid variable choice rule",
-					state.BaseChoiceRuleDefinition{
+					state.ChoiceRuleDefinition{
 						VariableExp:  "$",
 						StringEquals: aws.String("test"),
 						NextState:    "test",
