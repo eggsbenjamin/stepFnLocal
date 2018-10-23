@@ -1,3 +1,5 @@
+//go:generate mockgen -package sfn -source=sfn.go -destination sfn_mock.go
+
 package sfn
 
 import (
@@ -5,6 +7,9 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/lambda"
 	"github.com/eggsbenjamin/stepFnLocal/state"
 )
 
@@ -16,8 +21,25 @@ const (
 	ExecutionStatusAborted   = "ABORTED"
 )
 
+// ExecutionResult represents the result of a state machine execution
+type ExecutionResult struct {
+	Input  []byte
+	Output []byte
+	Status string
+	Start  time.Time
+	End    time.Time
+}
+
+// State defines the standard state API for state machine implementations
+type State interface {
+	Run([]byte) ([]byte, error)
+	Next() string
+	IsEnd() bool
+}
+
 type StepFunction interface {
-	StartExecution([]byte) (state.ExecutionResult, error)
+	StartExecution([]byte) (ExecutionResult, error)
+	SetStateFactory(StateFactory)
 }
 
 type stepFunction struct {
@@ -25,18 +47,35 @@ type stepFunction struct {
 	stateFactory    StateFactory
 }
 
-func New(stateMachineDef state.MachineDefinition, stateFactory StateFactory) (StepFunction, error) {
-	if err := stateMachineDef.Validate(); err != nil {
-		return stepFunction{}, err
+func New(def state.MachineDefinition, overrides map[string]OverrideFn) (StepFunction, error) {
+	if err := def.Validate(); err != nil {
+		return &stepFunction{}, err
 	}
 
-	return stepFunction{
-		stateMachineDef: stateMachineDef,
+	lambdaClient := lambda.New(session.Must(session.NewSession(&aws.Config{})))
+	stateFactory := NewStateFactory(overrides, lambdaClient)
+
+	return &stepFunction{
+		stateMachineDef: def,
 		stateFactory:    stateFactory,
 	}, nil
 }
 
-func (s stepFunction) StartExecution(input []byte) (state.ExecutionResult, error) {
+func NewWithAWSConfig(def state.MachineDefinition, overrides map[string]OverrideFn, awsCfg *aws.Config) (StepFunction, error) {
+	if err := def.Validate(); err != nil {
+		return &stepFunction{}, err
+	}
+
+	lambdaClient := lambda.New(session.Must(session.NewSession(awsCfg)))
+	stateFactory := NewStateFactory(overrides, lambdaClient)
+
+	return &stepFunction{
+		stateMachineDef: def,
+		stateFactory:    stateFactory,
+	}, nil
+}
+
+func (s *stepFunction) StartExecution(input []byte) (ExecutionResult, error) {
 	start := time.Now()
 
 	status := ExecutionStatusSucceeded
@@ -45,13 +84,17 @@ func (s stepFunction) StartExecution(input []byte) (state.ExecutionResult, error
 		status = ExecutionStatusFailed
 	}
 
-	return state.ExecutionResult{
+	return ExecutionResult{
 		Input:  input,
 		Output: output,
 		Status: status,
 		Start:  start,
 		End:    time.Now(),
 	}, err
+}
+
+func (s *stepFunction) SetStateFactory(stateFactory StateFactory) {
+	s.stateFactory = stateFactory
 }
 
 func (r stepFunction) run(stateTitle string, input json.RawMessage) ([]byte, error) {

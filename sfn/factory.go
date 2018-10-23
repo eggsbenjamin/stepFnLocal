@@ -10,7 +10,7 @@ import (
 )
 
 type StateFactory interface {
-	Create(state.Definition) (state.State, error)
+	Create(state.Definition) (State, error)
 }
 
 type stateFactory struct {
@@ -25,7 +25,7 @@ func NewStateFactory(overrides map[string]OverrideFn, lambdaClient lambda.Client
 	}
 }
 
-func (s stateFactory) Create(def state.Definition) (state.State, error) {
+func (s stateFactory) Create(def state.Definition) (State, error) {
 	switch def.Type() {
 	case state.TaskStateType:
 		taskDef, ok := def.(state.TaskDefinition)
@@ -51,7 +51,7 @@ func (s stateFactory) Create(def state.Definition) (state.State, error) {
 }
 
 // TODO: these shouldn't be methods exposed by the factory, instad they should be dependencies (see abstract factory pattern)
-func (s stateFactory) createTaskState(def state.TaskDefinition) (state.State, error) {
+func (s stateFactory) createTaskState(def state.TaskDefinition) (State, error) {
 	if overrideFn, ok := s.overrides[def.Resource]; ok {
 		return NewOverrideTask(def, overrideFn), nil
 	}
@@ -65,7 +65,7 @@ func (s stateFactory) createTaskState(def state.TaskDefinition) (state.State, er
 	return NewLambdaTask(def, arn, s.lambdaClient), nil
 }
 
-func (s stateFactory) createChoiceState(def state.ChoiceDefinition) (state.State, error) {
+func (s stateFactory) createChoiceState(def state.ChoiceDefinition) (State, error) {
 	choiceRuleFactory := NewChoiceRuleFactory()
 	choiceRules := []ChoiceRule{}
 	for _, choiceRuleDef := range def.Choices {

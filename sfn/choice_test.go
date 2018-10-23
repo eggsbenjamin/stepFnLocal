@@ -728,13 +728,13 @@ func TestChoiceState(t *testing.T) {
 	input := []byte(`"input"`)
 	tests := []struct {
 		title        string
-		setup        func(*gomock.Controller) state.State
+		setup        func(*gomock.Controller) sfn.State
 		expectedNext string
 		expectedErr  error
 	}{
 		{
 			"first rule true",
-			func(ctrl *gomock.Controller) state.State {
+			func(ctrl *gomock.Controller) sfn.State {
 				choiceRules := []sfn.ChoiceRule{}
 				mockChoiceRule1 := sfn.NewMockChoiceRule(ctrl)
 				mockChoiceRule1.EXPECT().Run(input).Return(true, nil)
@@ -750,7 +750,7 @@ func TestChoiceState(t *testing.T) {
 		},
 		{
 			"non-first rule true",
-			func(ctrl *gomock.Controller) state.State {
+			func(ctrl *gomock.Controller) sfn.State {
 				choiceRules := []sfn.ChoiceRule{}
 				mockChoiceRule1 := sfn.NewMockChoiceRule(ctrl)
 				mockChoiceRule1.EXPECT().Run(input).Return(false, nil)
@@ -767,7 +767,7 @@ func TestChoiceState(t *testing.T) {
 		},
 		{
 			"no match with default",
-			func(ctrl *gomock.Controller) state.State {
+			func(ctrl *gomock.Controller) sfn.State {
 				choiceRules := []sfn.ChoiceRule{}
 				mockChoiceRule1 := sfn.NewMockChoiceRule(ctrl)
 				mockChoiceRule1.EXPECT().Run(input).Return(false, nil)
@@ -786,7 +786,7 @@ func TestChoiceState(t *testing.T) {
 		},
 		{
 			"no match without default",
-			func(ctrl *gomock.Controller) state.State {
+			func(ctrl *gomock.Controller) sfn.State {
 				choiceRules := []sfn.ChoiceRule{}
 				mockChoiceRule1 := sfn.NewMockChoiceRule(ctrl)
 				mockChoiceRule1.EXPECT().Run(input).Return(false, nil)

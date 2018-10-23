@@ -34,9 +34,9 @@ func (m *MockStateFactory) EXPECT() *MockStateFactoryMockRecorder {
 }
 
 // Create mocks base method
-func (m *MockStateFactory) Create(arg0 state.Definition) (state.State, error) {
+func (m *MockStateFactory) Create(arg0 state.Definition) (State, error) {
 	ret := m.ctrl.Call(m, "Create", arg0)
-	ret0, _ := ret[0].(state.State)
+	ret0, _ := ret[0].(State)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

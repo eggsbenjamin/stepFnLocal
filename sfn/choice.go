@@ -20,7 +20,7 @@ type ChoiceState struct {
 	next    string
 }
 
-func NewChoiceState(def state.ChoiceDefinition, choices ...ChoiceRule) state.State {
+func NewChoiceState(def state.ChoiceDefinition, choices ...ChoiceRule) State {
 	return &ChoiceState{
 		def:     def,
 		choices: choices,

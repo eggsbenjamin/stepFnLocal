@@ -18,7 +18,7 @@ type LambdaTask struct {
 	lambdaClient lambda.Client
 }
 
-func NewLambdaTask(def state.TaskDefinition, arn arn.ARN, lambdaClient lambda.Client) state.State {
+func NewLambdaTask(def state.TaskDefinition, arn arn.ARN, lambdaClient lambda.Client) State {
 	return LambdaTask{
 		definition:   def,
 		arn:          arn,
@@ -65,7 +65,7 @@ type OverrideTask struct {
 	fn         OverrideFn
 }
 
-func NewOverrideTask(def state.TaskDefinition, fn OverrideFn) state.State {
+func NewOverrideTask(def state.TaskDefinition, fn OverrideFn) State {
 	return OverrideTask{
 		definition: def,
 		fn:         fn,
