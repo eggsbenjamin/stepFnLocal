@@ -16,8 +16,13 @@ func TestFailState(t *testing.T) {
 	}
 	failState := sfn.NewFailState(def)
 
+	expectedErr := state.NewError(
+		def.Error,
+		def.Cause,
+	)
+
 	result, err := failState.Run(input)
 	require.Equal(t, input, result) // should never modify it's input
-	require.NoError(t, err)
 	require.Equal(t, "", failState.Next())
+	require.Equal(t, expectedErr, err)
 }

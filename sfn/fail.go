@@ -13,7 +13,7 @@ func NewFailState(def state.FailDefinition) FailState {
 }
 
 func (p FailState) Run(input []byte) ([]byte, error) {
-	return input, nil
+	return input, state.NewError(p.def.Error, p.def.Cause)
 }
 
 func (p FailState) Next() string {

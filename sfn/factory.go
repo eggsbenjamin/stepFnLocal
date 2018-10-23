@@ -45,6 +45,18 @@ func (s stateFactory) Create(def state.Definition) (State, error) {
 			return nil, errors.New("invalid pass state definition")
 		}
 		return NewPassState(passDef), nil
+	case state.SucceedStateType:
+		succeedDef, ok := def.(state.SucceedDefinition)
+		if !ok {
+			return nil, errors.New("invalid succeed state definition")
+		}
+		return NewSucceedState(succeedDef), nil
+	case state.FailStateType:
+		failDef, ok := def.(state.FailDefinition)
+		if !ok {
+			return nil, errors.New("invalid fail state definition")
+		}
+		return NewFailState(failDef), nil
 	}
 
 	return nil, state.ErrUnknownState

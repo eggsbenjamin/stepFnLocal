@@ -6,10 +6,11 @@ Solution: Offline step function functionality for integration testing.
 
 #### TODO
 
-- Parallel State
-- Timeout State
-- Errors
-- Catch
-- Retry
-- Acceptance tests
+- Fail State [x]
+- Timeout State []
+- Parallel State []
+- Errors []
+- Catch []
+- Retry []
+- Acceptance tests []
 
