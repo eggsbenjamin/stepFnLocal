@@ -1,13 +1,15 @@
 ### Step Function Offline
 
-Problem: AWS Step Functions are useful but difficult to test as a whole. 
+Problem: AWS Step Functions are useful but AWS States Language DSL has limited tooling.
 
 Solution: Offline step function functionality for integration testing.
 
 #### TODO
 
-- spike functionality
-- parse step function files (JSON only for now)
-- create built in steps e.g. choice step 
-
+- Parallel State
+- Timeout State
+- Errors
+- Catch
+- Retry
+- Acceptance tests
 

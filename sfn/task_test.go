@@ -37,7 +37,10 @@ func TestLambdaTask(t *testing.T) {
 
 		t.Run("invocation", func(t *testing.T) {
 			errorPayload := []byte(`{"errorMessage" : "error"}`)
-			expectedError := state.NewError(errorPayload)
+			expectedError := state.NewError(
+				state.ErrTaskFailedCode,
+				string(errorPayload),
+			)
 
 			ctrl := gomock.NewController(t)
 			mockClient := lambda.NewMockClient(ctrl)

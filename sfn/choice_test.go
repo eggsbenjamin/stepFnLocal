@@ -799,7 +799,10 @@ func TestChoiceState(t *testing.T) {
 				return sfn.NewChoiceState(def, choiceRules...)
 			},
 			"",
-			state.ErrNoChoiceMatched,
+			state.NewError(
+				state.ErrNoChoiceMatchedCode,
+				"",
+			),
 		},
 	}
 

@@ -18,14 +18,14 @@ const (
 )
 
 var (
-	// states language errors
-	ErrAll                    = errors.New("States.ALL")
-	ErrTimeout                = errors.New("States.Timeout")
-	ErrTaskFailed             = errors.New("States.TaskFailed")
-	ErrTaskPermissions        = errors.New("States.TaskPermissions")
-	ErrResultPathMatchFailure = errors.New("States.ResultPathMatchFailure")
-	ErrBranchFailed           = errors.New("States.BranchFailed")
-	ErrNoChoiceMatched        = errors.New("States.NoChoiceMatched")
+	// states language error codes
+	ErrAllCode                    = "States.ALL"
+	ErrTimeoutCode                = "States.Timeout"
+	ErrTaskFailedCode             = "States.TaskFailed"
+	ErrTaskPermissionsCode        = "States.TaskPermissions"
+	ErrResultPathMatchFailureCode = "States.ResultPathMatchFailure"
+	ErrBranchFailedCode           = "States.BranchFailed"
+	ErrNoChoiceMatchedCode        = "States.NoChoiceMatched"
 
 	// internal errors
 	ErrStateNotFound = errors.New("state not found")
@@ -33,16 +33,18 @@ var (
 )
 
 type Error struct {
-	Message json.RawMessage
+	Name  string          `json:"error"`
+	Cause json.RawMessage `json:"cause"`
 }
 
 func (e Error) Error() string {
-	return string(e.Message)
+	return string(e.Cause)
 }
 
-func NewError(msg json.RawMessage) Error {
+func NewError(name string, cause string) Error {
 	return Error{
-		Message: msg,
+		Name:  name,
+		Cause: json.RawMessage(cause),
 	}
 }
 

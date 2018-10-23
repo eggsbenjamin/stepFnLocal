@@ -392,4 +392,67 @@ func TestDefinitions(t *testing.T) {
 			}
 		})
 	})
+
+	t.Run("FailDefinition", func(t *testing.T) {
+		t.Run("Validate", func(t *testing.T) {
+			tests := []struct {
+				title         string
+				task          state.FailDefinition
+				expectedError *state.ValidationError
+			}{
+				{
+					"missing error field",
+					state.FailDefinition{
+						BaseDefinition: state.BaseDefinition{
+							StateType: state.FailStateType,
+						},
+						Cause: "test",
+					},
+					state.NewValidationError(
+						state.MissingRequiredFieldErrType,
+						"Error", "",
+					),
+				},
+				{
+					"missing cause field",
+					state.FailDefinition{
+						BaseDefinition: state.BaseDefinition{
+							StateType: state.FailStateType,
+						},
+						Error: "test",
+					},
+					state.NewValidationError(
+						state.MissingRequiredFieldErrType,
+						"Cause", "",
+					),
+				},
+				{
+					"valid",
+					state.FailDefinition{
+						BaseDefinition: state.BaseDefinition{
+							StateType: state.FailStateType,
+						},
+						Error: "test",
+						Cause: "test",
+					},
+					nil,
+				},
+			}
+
+			for _, tt := range tests {
+				t.Run(tt.title, func(t *testing.T) {
+					err := tt.task.Validate()
+					if tt.expectedError == nil {
+						require.NoError(t, err)
+						return
+					}
+
+					require.Error(t, err)
+					vErr, ok := err.(state.ValidationErrors)
+					require.True(t, ok)
+					require.Contains(t, vErr, tt.expectedError)
+				})
+			}
+		})
+	})
 }

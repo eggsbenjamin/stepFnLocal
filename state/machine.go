@@ -45,6 +45,12 @@ func (m MachineStates) GetDefinition(name string) (Definition, error) {
 			return nil, errors.Wrap(err, "error unmarshaling succeed state json")
 		}
 		return *succeedStateDef, nil
+	case FailStateType:
+		var failStateDef *FailDefinition
+		if err := json.Unmarshal(rawState, &failStateDef); err != nil {
+			return nil, errors.Wrap(err, "error unmarshaling fail state json")
+		}
+		return *failStateDef, nil
 	}
 
 	return nil, ErrUnknownState

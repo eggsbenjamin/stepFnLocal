@@ -44,7 +44,10 @@ func (l LambdaTask) Run(input []byte) ([]byte, error) {
 		return nil, errors.Wrap(err, "lambda client error")
 	}
 	if invokeOutput.FunctionError != nil {
-		return nil, state.NewError(invokeOutput.Payload)
+		return nil, state.NewError(
+			state.ErrTaskFailedCode,
+			string(invokeOutput.Payload),
+		)
 	}
 
 	return invokeOutput.Payload, nil

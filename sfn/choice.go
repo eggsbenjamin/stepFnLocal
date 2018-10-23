@@ -40,7 +40,9 @@ func (c *ChoiceState) Run(input []byte) ([]byte, error) {
 	}
 
 	if c.def.DefaultState == "" {
-		return input, state.ErrNoChoiceMatched
+		return input, state.NewError(
+			state.ErrNoChoiceMatchedCode, "",
+		)
 	}
 
 	c.next = c.def.DefaultState
