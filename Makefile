@@ -3,5 +3,5 @@
 test:
 	go test ./... -tags=unit 
 
-gen_mocks:
+mocks:
 	go generate ./...
