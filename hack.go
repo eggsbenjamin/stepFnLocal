@@ -15,8 +15,28 @@ func main() {
 	defJSON := `
 	{
   "Comment": "Anatwine line-details generator step function",
-  "StartAt": "Linedetails_Validator",
+  "StartAt": "Decision",
   "States": {
+		"Decision": {
+			"Type": "Choice",
+			"Choices": [
+				{
+					"And": [
+						{
+							"Variable": "$",
+							"NumericLessThan": 600
+						}
+					],
+					"Next" : "PassThrough"
+				}
+			],
+			"Default" : "Linedetails_Generator"
+		},
+		"PassThrough" : {
+			"Type" : "Pass",
+			"Result" : "zalandomp_22102018.zip",
+			"Next" : "Linedetails_Validator"
+		},
     "Linedetails_Validator": {
 			"InputPath" : "$",
       "Type": "Task",
@@ -27,7 +47,25 @@ func main() {
       "Type": "Task",
 			"OutputPath" : "$.result",
       "Resource": "arn:aws:lambda:eu-west-1:459476646026:function:linedetails_generator_dev",
-      "End": true
+      "Next": "Decision2"
+    },
+		"Decision2": {
+			"Type": "Choice",
+			"Choices" : [
+				{
+					"And": [
+						{
+							"Variable": "$",
+							"NumericLessThan": 600
+						}
+					],
+					"Next" : "Decision"
+				}
+				],
+				"Default" : "Success"
+		},
+		"Success" : {
+			"Type" : "Succeed"
 		}
   }
 }
@@ -39,8 +77,8 @@ func main() {
 	}
 
 	overrides := map[string]sfn.OverrideFn{
-		"arn:aws:lambda:eu-west-1:459476646026:function:linedetails_generator_dev": func([]byte) ([]byte, error) {
-			return []byte(`{ "result" : [1,2,3,4,5] }`), nil
+		"arn:aws:lambda:eu-west-1:459476646026:function:linedetails_generator_dev": func(in []byte) ([]byte, error) {
+			return []byte("tits"), nil
 		},
 	}
 	config := &aws.Config{
@@ -54,7 +92,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	result, err := stepFn.StartExecution([]byte(`"zalandomp_14102018.zip"`))
+	result, err := stepFn.StartExecution([]byte(`88`))
 	if err != nil {
 		log.Fatal(err)
 	}

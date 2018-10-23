@@ -2,6 +2,7 @@ package state
 
 import (
 	"encoding/json"
+
 	"github.com/pkg/errors"
 )
 
@@ -26,6 +27,24 @@ func (m MachineStates) GetDefinition(name string) (Definition, error) {
 			return nil, errors.Wrap(err, "error unmarshaling task state json")
 		}
 		return *taskStateDef, nil
+	case ChoiceStateType:
+		var choiceStateDef *ChoiceDefinition
+		if err := json.Unmarshal(rawState, &choiceStateDef); err != nil {
+			return nil, errors.Wrap(err, "error unmarshaling choice state json")
+		}
+		return *choiceStateDef, nil
+	case PassStateType:
+		var passStateDef *PassDefinition
+		if err := json.Unmarshal(rawState, &passStateDef); err != nil {
+			return nil, errors.Wrap(err, "error unmarshaling pass state json")
+		}
+		return *passStateDef, nil
+	case SucceedStateType:
+		var succeedStateDef *SucceedDefinition
+		if err := json.Unmarshal(rawState, &succeedStateDef); err != nil {
+			return nil, errors.Wrap(err, "error unmarshaling succeed state json")
+		}
+		return *succeedStateDef, nil
 	}
 
 	return nil, ErrUnknownState

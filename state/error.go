@@ -6,6 +6,7 @@ import (
 )
 
 const (
+	// ValidationErr Types
 	MissingRequiredFieldErrType = "Missing required field"
 	InvalidKeyErrType           = "Invalid Key"
 	InvalidValueErrType         = "Invalid Value"
@@ -17,6 +18,16 @@ const (
 )
 
 var (
+	// states language errors
+	ErrAll                    = errors.New("States.ALL")
+	ErrTimeout                = errors.New("States.Timeout")
+	ErrTaskFailed             = errors.New("States.TaskFailed")
+	ErrTaskPermissions        = errors.New("States.TaskPermissions")
+	ErrResultPathMatchFailure = errors.New("States.ResultPathMatchFailure")
+	ErrBranchFailed           = errors.New("States.BranchFailed")
+	ErrNoChoiceMatched        = errors.New("States.NoChoiceMatched")
+
+	// internal errors
 	ErrStateNotFound = errors.New("state not found")
 	ErrUnknownState  = errors.New("unknown state")
 )

@@ -1,5 +1,3 @@
-//go:generate mockgen -package state -source=definition.go -destination definition_mock.go
-
 package state
 
 import (
@@ -49,8 +47,8 @@ func (j JSONPathExp) Search(input []byte) ([]byte, error) {
 type TaskDefinition struct {
 	BaseDefinition
 	TransitionDefinition
-	IODefinition
-	ResultDefinition
+	IOPathDefinition
+	ResultPathDefinition
 	Resource string `json:"Resource"`
 	/*
 		TimeoutSeconds   int    `json:"TimeoutSeconds"`
@@ -73,11 +71,11 @@ func (t TaskDefinition) Validate() error {
 		validationErrs = append(validationErrs, err.(ValidationErrors)...)
 	}
 
-	if err := t.IODefinition.Validate(); err != nil {
+	if err := t.IOPathDefinition.Validate(); err != nil {
 		validationErrs = append(validationErrs, err.(ValidationErrors)...)
 	}
 
-	if err := t.ResultDefinition.Validate(); err != nil {
+	if err := t.ResultPathDefinition.Validate(); err != nil {
 		validationErrs = append(validationErrs, err.(ValidationErrors)...)
 	}
 

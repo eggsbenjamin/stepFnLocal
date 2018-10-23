@@ -211,16 +211,16 @@ func TestDefinitions(t *testing.T) {
 		})
 	})
 
-	t.Run("IODefinition", func(t *testing.T) {
+	t.Run("IOPathDefinition", func(t *testing.T) {
 		t.Run("Validate", func(t *testing.T) {
 			tests := []struct {
 				title         string
-				task          state.IODefinition
+				task          state.IOPathDefinition
 				expectedError *state.ValidationError
 			}{
 				{
 					"invalid InputPath",
-					state.IODefinition{
+					state.IOPathDefinition{
 						InputPathExp: "invalid json path",
 					},
 					state.NewValidationError(
@@ -230,7 +230,7 @@ func TestDefinitions(t *testing.T) {
 				},
 				{
 					"invalid OutputPath",
-					state.IODefinition{
+					state.IOPathDefinition{
 						OutputPathExp: "invalid json path",
 					},
 					state.NewValidationError(
@@ -240,7 +240,7 @@ func TestDefinitions(t *testing.T) {
 				},
 				{
 					"valid",
-					state.IODefinition{
+					state.IOPathDefinition{
 						InputPathExp:  "$",
 						OutputPathExp: "$",
 					},
@@ -265,16 +265,16 @@ func TestDefinitions(t *testing.T) {
 		})
 	})
 
-	t.Run("ResultDefinition", func(t *testing.T) {
+	t.Run("ResultPathDefinition", func(t *testing.T) {
 		t.Run("Validate", func(t *testing.T) {
 			tests := []struct {
 				title         string
-				task          state.ResultDefinition
+				task          state.ResultPathDefinition
 				expectedError *state.ValidationError
 			}{
 				{
 					"invalid ResultPath",
-					state.ResultDefinition{
+					state.ResultPathDefinition{
 						ResultPathExp: "invalid json path",
 					},
 					state.NewValidationError(
@@ -284,7 +284,7 @@ func TestDefinitions(t *testing.T) {
 				},
 				{
 					"valid",
-					state.ResultDefinition{
+					state.ResultPathDefinition{
 						ResultPathExp: "$",
 					},
 					nil,
@@ -333,6 +333,44 @@ func TestDefinitions(t *testing.T) {
 							EndState: true,
 						},
 						Resource: "test",
+					},
+					nil,
+				},
+			}
+
+			for _, tt := range tests {
+				t.Run(tt.title, func(t *testing.T) {
+					err := tt.task.Validate()
+					if tt.expectedError == nil {
+						require.NoError(t, err)
+						return
+					}
+
+					require.Error(t, err)
+					vErr, ok := err.(state.ValidationErrors)
+					require.True(t, ok)
+					require.Contains(t, vErr, tt.expectedError)
+				})
+			}
+		})
+	})
+
+	t.Run("PassDefinition", func(t *testing.T) {
+		t.Run("Validate", func(t *testing.T) {
+			tests := []struct {
+				title         string
+				task          state.PassDefinition
+				expectedError *state.ValidationError
+			}{
+				{
+					"valid",
+					state.PassDefinition{
+						BaseDefinition: state.BaseDefinition{
+							StateType: state.PassStateType,
+						},
+						TransitionDefinition: state.TransitionDefinition{
+							EndState: true,
+						},
 					},
 					nil,
 				},

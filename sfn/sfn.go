@@ -2,6 +2,7 @@ package sfn
 
 import (
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/eggsbenjamin/stepFnLocal/state"
@@ -54,6 +55,7 @@ func (s stepFunction) StartExecution(input []byte) (state.ExecutionResult, error
 }
 
 func (r stepFunction) run(stateTitle string, input json.RawMessage) ([]byte, error) {
+	fmt.Printf("running state: %s\n", stateTitle)
 	def, err := r.stateMachineDef.States.GetDefinition(stateTitle)
 	if err != nil {
 		return []byte{}, err

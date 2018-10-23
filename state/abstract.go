@@ -94,12 +94,12 @@ func (t TransitionDefinition) End() bool {
 	return t.EndState
 }
 
-type IODefinition struct {
+type IOPathDefinition struct {
 	InputPathExp  JSONPathExp `json:"InputPath"`
 	OutputPathExp JSONPathExp `json:"OutputPath"`
 }
 
-func (i IODefinition) Validate() error {
+func (i IOPathDefinition) Validate() error {
 	validationErrs := ValidationErrors{}
 
 	if i.InputPathExp != "" {
@@ -126,19 +126,19 @@ func (i IODefinition) Validate() error {
 	return nil
 }
 
-func (i IODefinition) InputPath() JSONPathExp {
+func (i IOPathDefinition) InputPath() JSONPathExp {
 	return i.InputPathExp
 }
 
-func (i IODefinition) OutputPath() JSONPathExp {
+func (i IOPathDefinition) OutputPath() JSONPathExp {
 	return i.OutputPathExp
 }
 
-type ResultDefinition struct {
+type ResultPathDefinition struct {
 	ResultPathExp JSONPathExp `json:"ResultPath"`
 }
 
-func (r ResultDefinition) Validate() error {
+func (r ResultPathDefinition) Validate() error {
 	validationErrs := ValidationErrors{}
 
 	if r.ResultPathExp != "" {
@@ -156,6 +156,6 @@ func (r ResultDefinition) Validate() error {
 	return nil
 }
 
-func (r ResultDefinition) ResultPath() JSONPathExp {
+func (r ResultPathDefinition) ResultPath() JSONPathExp {
 	return r.ResultPathExp
 }

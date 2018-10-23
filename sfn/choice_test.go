@@ -1,13 +1,16 @@
 // +build unit
 
-package sfn
+package sfn_test
 
 import (
 	"testing"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/eggsbenjamin/stepFnLocal/sfn"
 	"github.com/eggsbenjamin/stepFnLocal/state"
+	"github.com/golang/mock/gomock"
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/require"
 )
 
@@ -17,7 +20,7 @@ func TestChoiceRules(t *testing.T) {
 			VariableExp:  state.JSONPathExp("$"),
 			StringEquals: aws.String("test"),
 		}
-		rule := NewStringEqualsChoiceRule(def)
+		rule := sfn.NewStringEqualsChoiceRule(def)
 
 		tests := []struct {
 			title          string
@@ -50,7 +53,7 @@ func TestChoiceRules(t *testing.T) {
 			VariableExp:    state.JSONPathExp("$"),
 			StringLessThan: aws.String("test"),
 		}
-		rule := NewStringLessThanChoiceRule(def)
+		rule := sfn.NewStringLessThanChoiceRule(def)
 
 		tests := []struct {
 			title          string
@@ -83,7 +86,7 @@ func TestChoiceRules(t *testing.T) {
 			VariableExp:       state.JSONPathExp("$"),
 			StringGreaterThan: aws.String("test"),
 		}
-		rule := NewStringGreaterThanChoiceRule(def)
+		rule := sfn.NewStringGreaterThanChoiceRule(def)
 
 		tests := []struct {
 			title          string
@@ -116,7 +119,7 @@ func TestChoiceRules(t *testing.T) {
 			VariableExp:          state.JSONPathExp("$"),
 			StringLessThanEquals: aws.String("test"),
 		}
-		rule := NewStringLessThanEqualsChoiceRule(def)
+		rule := sfn.NewStringLessThanEqualsChoiceRule(def)
 
 		tests := []struct {
 			title          string
@@ -154,7 +157,7 @@ func TestChoiceRules(t *testing.T) {
 			VariableExp:             state.JSONPathExp("$"),
 			StringGreaterThanEquals: aws.String("test"),
 		}
-		rule := NewStringGreaterThanEqualsChoiceRule(def)
+		rule := sfn.NewStringGreaterThanEqualsChoiceRule(def)
 
 		tests := []struct {
 			title          string
@@ -192,7 +195,7 @@ func TestChoiceRules(t *testing.T) {
 			VariableExp:   state.JSONPathExp("$"),
 			NumericEquals: aws.Float64(1986),
 		}
-		rule := NewNumericEqualsChoiceRule(def)
+		rule := sfn.NewNumericEqualsChoiceRule(def)
 
 		tests := []struct {
 			title          string
@@ -225,7 +228,7 @@ func TestChoiceRules(t *testing.T) {
 			VariableExp:     state.JSONPathExp("$"),
 			NumericLessThan: aws.Float64(1986),
 		}
-		rule := NewNumericLessThanChoiceRule(def)
+		rule := sfn.NewNumericLessThanChoiceRule(def)
 
 		tests := []struct {
 			title          string
@@ -258,7 +261,7 @@ func TestChoiceRules(t *testing.T) {
 			VariableExp:        state.JSONPathExp("$"),
 			NumericGreaterThan: aws.Float64(1986),
 		}
-		rule := NewNumericGreaterThanChoiceRule(def)
+		rule := sfn.NewNumericGreaterThanChoiceRule(def)
 
 		tests := []struct {
 			title          string
@@ -291,7 +294,7 @@ func TestChoiceRules(t *testing.T) {
 			VariableExp:           state.JSONPathExp("$"),
 			NumericLessThanEquals: aws.Float64(1986),
 		}
-		rule := NewNumericLessThanEqualsChoiceRule(def)
+		rule := sfn.NewNumericLessThanEqualsChoiceRule(def)
 
 		tests := []struct {
 			title          string
@@ -329,7 +332,7 @@ func TestChoiceRules(t *testing.T) {
 			VariableExp:              state.JSONPathExp("$"),
 			NumericGreaterThanEquals: aws.Float64(1986),
 		}
-		rule := NewNumericGreaterThanEqualsChoiceRule(def)
+		rule := sfn.NewNumericGreaterThanEqualsChoiceRule(def)
 
 		tests := []struct {
 			title          string
@@ -367,7 +370,7 @@ func TestChoiceRules(t *testing.T) {
 			VariableExp:   state.JSONPathExp("$"),
 			BooleanEquals: aws.Bool(true),
 		}
-		rule := NewBooleanEqualsChoiceRule(def)
+		rule := sfn.NewBooleanEqualsChoiceRule(def)
 
 		tests := []struct {
 			title          string
@@ -401,7 +404,7 @@ func TestChoiceRules(t *testing.T) {
 			VariableExp:     state.JSONPathExp("$"),
 			TimestampEquals: &dummyTime,
 		}
-		rule := NewTimestampEqualsChoiceRule(def)
+		rule := sfn.NewTimestampEqualsChoiceRule(def)
 
 		tests := []struct {
 			title          string
@@ -435,7 +438,7 @@ func TestChoiceRules(t *testing.T) {
 			VariableExp:       state.JSONPathExp("$"),
 			TimestampLessThan: &dummyTime,
 		}
-		rule := NewTimestampLessThanChoiceRule(def)
+		rule := sfn.NewTimestampLessThanChoiceRule(def)
 
 		tests := []struct {
 			title          string
@@ -469,7 +472,7 @@ func TestChoiceRules(t *testing.T) {
 			VariableExp:          state.JSONPathExp("$"),
 			TimestampGreaterThan: &dummyTime,
 		}
-		rule := NewTimestampGreaterThanChoiceRule(def)
+		rule := sfn.NewTimestampGreaterThanChoiceRule(def)
 
 		tests := []struct {
 			title          string
@@ -503,7 +506,7 @@ func TestChoiceRules(t *testing.T) {
 			VariableExp:             state.JSONPathExp("$"),
 			TimestampLessThanEquals: &dummyTime,
 		}
-		rule := NewTimestampLessThanEqualsChoiceRule(def)
+		rule := sfn.NewTimestampLessThanEqualsChoiceRule(def)
 
 		tests := []struct {
 			title          string
@@ -542,7 +545,7 @@ func TestChoiceRules(t *testing.T) {
 			VariableExp:                state.JSONPathExp("$"),
 			TimestampGreaterThanEquals: &dummyTime,
 		}
-		rule := NewTimestampGreaterThanEqualsChoiceRule(def)
+		rule := sfn.NewTimestampGreaterThanEqualsChoiceRule(def)
 
 		tests := []struct {
 			title          string
@@ -574,4 +577,248 @@ func TestChoiceRules(t *testing.T) {
 			})
 		}
 	})
+
+	// TODO; reconsider testing approach, are mocks suitable for this? (hint: no, use stubs instead...)
+	t.Run("And", func(t *testing.T) {
+		tests := []struct {
+			title            string
+			setupChoiceRules func(*gomock.Controller) []sfn.ChoiceRule
+			expectedResult   bool
+		}{
+			{
+				"false",
+				func(ctrl *gomock.Controller) []sfn.ChoiceRule {
+					choiceRules := []sfn.ChoiceRule{}
+					mockChoiceRule := sfn.NewMockChoiceRule(ctrl)
+					mockChoiceRule.EXPECT().Run([]byte{}).Return(false, nil)
+
+					return append(choiceRules, mockChoiceRule)
+				},
+				false,
+			},
+			{
+				"true",
+				func(ctrl *gomock.Controller) []sfn.ChoiceRule {
+					choiceRules := []sfn.ChoiceRule{}
+					mockChoiceRule := sfn.NewMockChoiceRule(ctrl)
+					mockChoiceRule.EXPECT().Run([]byte{}).Return(true, nil)
+
+					return append(choiceRules, mockChoiceRule)
+				},
+				true,
+			},
+		}
+
+		for _, tt := range tests {
+			t.Run(tt.title, func(t *testing.T) {
+				ctrl := gomock.NewController(t)
+				rule := sfn.NewAndChoiceRule(state.ChoiceRuleDefinition{}, tt.setupChoiceRules(ctrl)...)
+
+				result, err := rule.Run([]byte{})
+				require.NoError(t, err)
+				require.Equal(t, tt.expectedResult, result)
+				ctrl.Finish()
+			})
+		}
+	})
+
+	t.Run("Or", func(t *testing.T) {
+		tests := []struct {
+			title            string
+			setupChoiceRules func(*gomock.Controller) []sfn.ChoiceRule
+			expectedResult   bool
+		}{
+			{
+				"false",
+				func(ctrl *gomock.Controller) []sfn.ChoiceRule {
+					choiceRules := []sfn.ChoiceRule{}
+					mockChoiceRule := sfn.NewMockChoiceRule(ctrl)
+					mockChoiceRule.EXPECT().Run([]byte{}).Return(false, nil)
+
+					return append(choiceRules, mockChoiceRule)
+				},
+				false,
+			},
+			{
+				"true",
+				func(ctrl *gomock.Controller) []sfn.ChoiceRule {
+					choiceRules := []sfn.ChoiceRule{}
+					mockChoiceRule := sfn.NewMockChoiceRule(ctrl)
+					mockChoiceRule.EXPECT().Run([]byte{}).Return(true, nil)
+
+					return append(choiceRules, mockChoiceRule)
+				},
+				true,
+			},
+		}
+
+		for _, tt := range tests {
+			t.Run(tt.title, func(t *testing.T) {
+				ctrl := gomock.NewController(t)
+				rule := sfn.NewOrChoiceRule(state.ChoiceRuleDefinition{}, tt.setupChoiceRules(ctrl)...)
+
+				result, err := rule.Run([]byte{})
+				require.NoError(t, err)
+				require.Equal(t, tt.expectedResult, result)
+				ctrl.Finish()
+			})
+		}
+	})
+
+	t.Run("Not", func(t *testing.T) {
+		tests := []struct {
+			title           string
+			setupChoiceRule func(*gomock.Controller) sfn.ChoiceRule
+			expectedResult  bool
+		}{
+			{
+				"false",
+				func(ctrl *gomock.Controller) sfn.ChoiceRule {
+					mockChoiceRule := sfn.NewMockChoiceRule(ctrl)
+					mockChoiceRule.EXPECT().Run([]byte{}).Return(false, nil)
+
+					return mockChoiceRule
+				},
+				true,
+			},
+			{
+				"true",
+				func(ctrl *gomock.Controller) sfn.ChoiceRule {
+					mockChoiceRule := sfn.NewMockChoiceRule(ctrl)
+					mockChoiceRule.EXPECT().Run([]byte{}).Return(true, nil)
+
+					return mockChoiceRule
+				},
+				false,
+			},
+		}
+
+		for _, tt := range tests {
+			t.Run(tt.title, func(t *testing.T) {
+				ctrl := gomock.NewController(t)
+				rule := sfn.NewNotChoiceRule(state.ChoiceRuleDefinition{}, tt.setupChoiceRule(ctrl))
+
+				result, err := rule.Run([]byte{})
+				require.NoError(t, err)
+				require.Equal(t, tt.expectedResult, result)
+				ctrl.Finish()
+			})
+		}
+	})
+}
+
+// TODO: test logical operator creation
+func TestChoiceRuleFactory(t *testing.T) {
+	tests := []struct {
+		title          string
+		input          state.ChoiceRuleDefinition
+		expectedResult sfn.ChoiceRule
+	}{}
+
+	for _, tt := range tests {
+		t.Run(tt.title, func(t *testing.T) {
+			result, err := sfn.NewChoiceRuleFactory().Create(tt.input)
+			require.NoError(t, err)
+			require.Equal(t, tt.expectedResult, result)
+		})
+	}
+}
+
+func TestChoiceState(t *testing.T) {
+	input := []byte(`"input"`)
+	tests := []struct {
+		title        string
+		setup        func(*gomock.Controller) state.State
+		expectedNext string
+		expectedErr  error
+	}{
+		{
+			"first rule true",
+			func(ctrl *gomock.Controller) state.State {
+				choiceRules := []sfn.ChoiceRule{}
+				mockChoiceRule1 := sfn.NewMockChoiceRule(ctrl)
+				mockChoiceRule1.EXPECT().Run(input).Return(true, nil)
+				mockChoiceRule1.EXPECT().Next().Return("test")
+
+				mockChoiceRule2 := sfn.NewMockChoiceRule(ctrl)
+
+				choiceRules = append(choiceRules, mockChoiceRule1, mockChoiceRule2)
+				return sfn.NewChoiceState(state.ChoiceDefinition{}, choiceRules...)
+			},
+			"test",
+			nil,
+		},
+		{
+			"non-first rule true",
+			func(ctrl *gomock.Controller) state.State {
+				choiceRules := []sfn.ChoiceRule{}
+				mockChoiceRule1 := sfn.NewMockChoiceRule(ctrl)
+				mockChoiceRule1.EXPECT().Run(input).Return(false, nil)
+
+				mockChoiceRule2 := sfn.NewMockChoiceRule(ctrl)
+				mockChoiceRule2.EXPECT().Run(input).Return(true, nil)
+				mockChoiceRule2.EXPECT().Next().Return("test")
+
+				choiceRules = append(choiceRules, mockChoiceRule1, mockChoiceRule2)
+				return sfn.NewChoiceState(state.ChoiceDefinition{}, choiceRules...)
+			},
+			"test",
+			nil,
+		},
+		{
+			"no match with default",
+			func(ctrl *gomock.Controller) state.State {
+				choiceRules := []sfn.ChoiceRule{}
+				mockChoiceRule1 := sfn.NewMockChoiceRule(ctrl)
+				mockChoiceRule1.EXPECT().Run(input).Return(false, nil)
+
+				mockChoiceRule2 := sfn.NewMockChoiceRule(ctrl)
+				mockChoiceRule2.EXPECT().Run(input).Return(false, nil)
+
+				def := state.ChoiceDefinition{
+					DefaultState: "test",
+				}
+				choiceRules = append(choiceRules, mockChoiceRule1, mockChoiceRule2)
+				return sfn.NewChoiceState(def, choiceRules...)
+			},
+			"test",
+			nil,
+		},
+		{
+			"no match without default",
+			func(ctrl *gomock.Controller) state.State {
+				choiceRules := []sfn.ChoiceRule{}
+				mockChoiceRule1 := sfn.NewMockChoiceRule(ctrl)
+				mockChoiceRule1.EXPECT().Run(input).Return(false, nil)
+
+				mockChoiceRule2 := sfn.NewMockChoiceRule(ctrl)
+				mockChoiceRule2.EXPECT().Run(input).Return(false, nil)
+
+				def := state.ChoiceDefinition{}
+				choiceRules = append(choiceRules, mockChoiceRule1, mockChoiceRule2)
+				return sfn.NewChoiceState(def, choiceRules...)
+			},
+			"",
+			state.ErrNoChoiceMatched,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.title, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			choiceState := tt.setup(ctrl)
+
+			result, err := choiceState.Run(input)
+			require.Equal(t, input, result) // should never modify it's input
+
+			if tt.expectedErr != nil {
+				require.Equal(t, tt.expectedErr, errors.Cause(err))
+				return
+			}
+
+			require.NoError(t, err)
+			require.Equal(t, tt.expectedNext, choiceState.Next())
+			ctrl.Finish()
+		})
+	}
 }
