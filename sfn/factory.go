@@ -3,6 +3,7 @@
 package sfn
 
 import (
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/arn"
 	"github.com/eggsbenjamin/stepFnLocal/lambda"
 	state "github.com/eggsbenjamin/stepFnLocal/state"
@@ -57,6 +58,12 @@ func (s stateFactory) Create(def state.Definition) (State, error) {
 			return nil, errors.New("invalid fail state definition")
 		}
 		return NewFailState(failDef), nil
+	case state.ParallelStateType:
+		parallelDef, ok := def.(state.ParallelDefinition)
+		if !ok {
+			return nil, errors.New("invalid parallel state definition")
+		}
+		return s.createParallelState(parallelDef)
 	}
 
 	return nil, state.ErrUnknownState
@@ -90,4 +97,18 @@ func (s stateFactory) createChoiceState(def state.ChoiceDefinition) (State, erro
 	}
 
 	return NewChoiceState(def, choiceRules...), nil
+}
+
+func (s stateFactory) createParallelState(def state.ParallelDefinition) (State, error) {
+	stateMachines := []StepFunction{}
+
+	for _, branchDef := range def.Branches {
+		stateMachine, err := NewWithAWSConfig(branchDef, s.overrides, &aws.Config{}) // TODO: use same config
+		if err != nil {
+			return nil, errors.Wrap(err, "error creating parallel state branch")
+		}
+		stateMachines = append(stateMachines, stateMachine)
+	}
+
+	return NewParallelState(def, stateMachines...), nil
 }

@@ -51,6 +51,12 @@ func (m MachineStates) GetDefinition(name string) (Definition, error) {
 			return nil, errors.Wrap(err, "error unmarshaling fail state json")
 		}
 		return *failStateDef, nil
+	case ParallelStateType:
+		var parallelStateDef *ParallelDefinition
+		if err := json.Unmarshal(rawState, &parallelStateDef); err != nil {
+			return nil, errors.Wrap(err, "error unmarshaling parallel state json")
+		}
+		return *parallelStateDef, nil
 	}
 
 	return nil, ErrUnknownState

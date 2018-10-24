@@ -7,8 +7,9 @@ Solution: Offline step function functionality for integration testing.
 #### TODO
 
 - Fail State [x]
-- Timeout State []
 - Parallel State []
+- Verbose mode []
+- Timeout State []
 - Errors []
 - Catch []
 - Retry []

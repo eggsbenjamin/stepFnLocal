@@ -15,12 +15,13 @@ const (
 )
 
 var validTypes = map[string]struct{}{
-	PassStateType:    {},
-	TaskStateType:    {},
-	ChoiceStateType:  {},
-	WaitStateType:    {},
-	SucceedStateType: {},
-	FailStateType:    {},
+	PassStateType:     {},
+	TaskStateType:     {},
+	ChoiceStateType:   {},
+	WaitStateType:     {},
+	SucceedStateType:  {},
+	FailStateType:     {},
+	ParallelStateType: {},
 }
 
 type JSONPathExp string

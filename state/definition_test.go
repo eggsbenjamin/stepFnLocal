@@ -455,4 +455,58 @@ func TestDefinitions(t *testing.T) {
 			}
 		})
 	})
+
+	t.Run("ParallelDefinition", func(t *testing.T) {
+		t.Run("Validate", func(t *testing.T) {
+			tests := []struct {
+				title         string
+				state         state.ParallelDefinition
+				expectedError *state.ValidationError
+			}{
+				{
+					"missing branches",
+					state.ParallelDefinition{},
+					state.NewValidationError(
+						state.MissingRequiredFieldErrType,
+						"Branches", "Is empty",
+					),
+				},
+				{
+					"valid",
+					state.ParallelDefinition{
+						BaseDefinition: state.BaseDefinition{
+							StateType: state.ParallelStateType,
+						},
+						TransitionDefinition: state.TransitionDefinition{
+							EndState: true,
+						},
+						Branches: []state.MachineDefinition{
+							{
+								StartAt: "test",
+								States: state.MachineStates{
+									"test": []byte(`{ "Type": "Succeed" }`),
+								},
+							},
+						},
+					},
+					nil,
+				},
+			}
+
+			for _, tt := range tests {
+				t.Run(tt.title, func(t *testing.T) {
+					err := tt.state.Validate()
+					if tt.expectedError == nil {
+						require.NoError(t, err)
+						return
+					}
+
+					require.Error(t, err)
+					vErr, ok := err.(state.ValidationErrors)
+					require.True(t, ok)
+					require.Contains(t, vErr, tt.expectedError)
+				})
+			}
+		})
+	})
 }
